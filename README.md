@@ -1,17 +1,13 @@
-<p>
-  <code>HITSZ-DS / EvoHarness / README.md</code>
-</p>
-
-<p align="center">
-  <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="132">&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="760">
-</p>
-
-<hr />
-
-<p align="center">
-  <code>terminal-native harness | controlled self-evolution | mcp-ready | plugin-native</code>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" valign="middle" width="180">
+      <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="132">
+    </td>
+    <td align="left" valign="middle">
+      <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="760">
+    </td>
+  </tr>
+</table>
 
 <p align="center">
   <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&pause=1300&color=7DD3FC&center=true&vCenter=true&width=980&lines=EvoHarness+%2F%2F+Terminal-Native+Agent+Harness;Controlled+Self-Evolution+%2F%2F+Plugins+%2F%2F+MCP;Coding+workflows+with+visible+harness+surfaces" alt="EvoHarness typing intro" />
