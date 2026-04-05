@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./.github/assets/evoharness-mark.svg" alt="EvoHarness mark" width="120">
+  <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="120">
   <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="620">
 </div>
 

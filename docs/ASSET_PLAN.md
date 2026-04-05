@@ -11,6 +11,7 @@ The priorities are:
 The README hero now uses:
 
 - `./.github/assets/evoharness-mark.svg` for the **left-side project mark**
+  or `./.github/assets/evoharness-mark.png` if you replace it with a raster image
 
 If you find a better left-side image, the easiest path is simply:
 
