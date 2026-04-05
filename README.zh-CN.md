@@ -31,7 +31,7 @@
   <a href="#harness-architecture"><img src="https://img.shields.io/badge/HARNESS-ARCHITECTURE-F472B6?style=for-the-badge" alt="Harness 架构"></a>
   <a href="#controlled-self-evolution"><img src="https://img.shields.io/badge/SELF_EVOLUTION-CONTROLLED-84CC16?style=for-the-badge" alt="可控自进化"></a>
   <a href="#plugin-mcp-ecosystem"><img src="https://img.shields.io/badge/PLUGINS-7-F59E0B?style=for-the-badge" alt="Plugin 生态"></a>
-  <a href="#documentation"><img src="https://img.shields.io/badge/DOCS-5_GUIDES-334155?style=for-the-badge" alt="文档"></a>
+  <a href="#modes-commands"><img src="https://img.shields.io/badge/MODES-COMMANDS-334155?style=for-the-badge" alt="Modes and Commands"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/LICENSE-Apache_2.0-FACC15?style=for-the-badge" alt="License"></a>
 </p>
 
@@ -124,7 +124,7 @@ EvoHarness 的核心架构判断是：**harness 本身就是一等工程表面**
 
 - 🚀 先跑 `evoh doctor --workspace .`，看清楚当前 runtime surface
 - 🧭 再跑 `evoh tools-list --workspace .`、`evoh commands-list --workspace .`、`evoh agents-list --workspace .`、`evoh mcp-list --workspace . --kind all`
-- 📚 再读 [Architecture](./docs/architecture.md)、[Project Positioning](./docs/project-positioning.zh-CN.md)、[Feature Matrix](./docs/feature-matrix.zh-CN.md)
+- 🧠 进入会话后再用 `/help`、`/commands`、`/skills`、`/agents`、`/mcp` 去摸清现场
 - 🧩 最后去看 [plugins](./plugins)、[.claude](./.claude)、[.evo-harness/mcp.json](./.evo-harness/mcp.json)，就能把它当成一个真实 harness workspace 来理解
 
 一句话概括：EvoHarness 不是“带点工具的 agent”，而是一个**可见、可编辑、可进化的 harness workspace** `(^_^)`
@@ -161,14 +161,6 @@ evoh --workspace .
 如果本机存在 `npm`，EvoHarness 会优先尝试 React/Ink 前端。  
 如果没有，它会自动回退到文本会话。
 
-<p align="center">
-  <img src="./.github/assets/evoharness-session-home.png" alt="EvoHarness session home" width="100%">
-</p>
-
-<p align="center">
-  <strong>✨ 首次进入后，你会先看到 runtime deck、slash commands 和实时 harness surface</strong>
-</p>
-
 ### 3. 在会话里用 `/setup` 配置 Provider
 
 进入会话后，先输入：
@@ -183,14 +175,6 @@ EvoHarness 会依次问你四件事：
 - 🤖 `Model`：你实际想跑的模型名
 - 🔑 `API key`：现在直接粘贴，或者如果你已经放在别处就先留空
 - 🌐 `Base URL`：如果你用的是自定义网关或非默认地址，这里必须明确填
-
-<p align="center">
-  <img src="./.github/assets/evoharness-setup-guide.png" alt="EvoHarness setup prompt" width="100%">
-</p>
-
-<p align="center">
-  <strong>🛠️ `/setup` 是把“能启动”变成“真能用”的最快路径</strong>
-</p>
 
 ### Provider Profile 该怎么选？
 
@@ -290,14 +274,58 @@ Bundled MCP surfaces 覆盖：
 
 ---
 
-<a id="documentation"></a>
-## 📚 文档
+<a id="modes-commands"></a>
+## 🎛️🧭 模式与命令 (•‿•)
 
-- [Architecture](./docs/architecture.md)
-- [Feature Matrix (zh-CN)](./docs/feature-matrix.zh-CN.md)
-- [Project Positioning (zh-CN)](./docs/project-positioning.zh-CN.md)
-- [Roadmap (zh-CN)](./docs/roadmap.zh-CN.md)
-- [OpenHarness Reference](./docs/openharness-reference.md)
+<p align="center">
+  <strong>🧠 provider + model • 🔐 permission mode • 🧩 active workflow command • 📡 live surface counts</strong>
+</p>
+
+进入会话后，EvoHarness 会把运行状态直接放在 runtime deck 里，而不是藏起来。
+
+你最值得先看懂的是这几项：
+
+- 🧠 `provider` + `model`：当前连接的是哪类后端、正在跑哪个模型
+- 🔐 `mode`：当前 permission mode
+- 🧩 `/<workspace-command>`：当前激活的 markdown workflow，比如 `/read-only-inspect`
+- 📡 `surface`：commands、skills、agents、plugins、MCP 的实时数量
+- 💓 `pulse`：tasks、approvals、sessions、tokens 等运行脉搏
+
+权限模式其实很简单：
+
+- `default`：读操作直接跑，改动类操作需要审批
+- `plan`：阻止 mutating tools，适合先做检查、梳理和规划
+- `full-auto`：只要不超出 sandbox 边界，就自动执行
+
+命令层也很清楚：
+
+- `/help`、`/setup`、`/doctor`、`/permissions`、`/resume`、`/plugins`、`/mcp` 属于会话级 slash commands
+- `/<workspace-command>` 会激活 `.claude/commands/` 里的 markdown workflow
+- skills 是按需加载的流程指南
+- agents 是有边界的 delegation
+- plugins 会把 commands、skills、agents、MCP surface 打包在一起
+
+建议第一次进会话先试这些：
+
+```text
+/help
+/doctor
+/commands
+/skills
+/agents
+/mcp
+/permissions
+/read-only-inspect auth flow
+```
+
+如果你想先在 CLI 里看清楚这些表面，再进入聊天：
+
+```bash
+evoh commands-list --workspace .
+evoh agents-list --workspace .
+evoh tools-list --workspace .
+evoh mcp-list --workspace . --kind all
+```
 
 ---
 

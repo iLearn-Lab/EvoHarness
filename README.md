@@ -31,7 +31,7 @@
   <a href="#harness-architecture"><img src="https://img.shields.io/badge/HARNESS-ARCHITECTURE-F472B6?style=for-the-badge" alt="Harness Architecture"></a>
   <a href="#controlled-self-evolution"><img src="https://img.shields.io/badge/SELF_EVOLUTION-CONTROLLED-84CC16?style=for-the-badge" alt="Controlled Self Evolution"></a>
   <a href="#plugin-mcp-ecosystem"><img src="https://img.shields.io/badge/PLUGINS-7-F59E0B?style=for-the-badge" alt="Plugins"></a>
-  <a href="#documentation"><img src="https://img.shields.io/badge/DOCS-5_GUIDES-334155?style=for-the-badge" alt="Docs"></a>
+  <a href="#modes-commands"><img src="https://img.shields.io/badge/MODES-COMMANDS-334155?style=for-the-badge" alt="Modes and Commands"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/LICENSE-Apache_2.0-FACC15?style=for-the-badge" alt="License"></a>
 </p>
 
@@ -124,7 +124,7 @@ If you want to understand the project quickly, start here:
 
 - 🚀 run `evoh doctor --workspace .` to inspect the resolved runtime surface
 - 🧭 run `evoh tools-list --workspace .`, `evoh commands-list --workspace .`, `evoh agents-list --workspace .`, and `evoh mcp-list --workspace . --kind all`
-- 📚 read [Architecture](./docs/architecture.md), [Project Positioning](./docs/project-positioning.zh-CN.md), and [Feature Matrix](./docs/feature-matrix.zh-CN.md)
+- 🧠 use `/help`, `/commands`, `/skills`, `/agents`, and `/mcp` once you enter the session
 - 🧩 browse [plugins](./plugins), [.claude](./.claude), and [.evo-harness/mcp.json](./.evo-harness/mcp.json) to see the harness as a real workspace product
 
 In short: EvoHarness is not just "an agent with tools"; it is a **visible, editable, and evolvable harness workspace** `(^_^)`
@@ -161,14 +161,6 @@ evoh --workspace .
 If `npm` is available, EvoHarness will try the React/Ink frontend first.  
 If not, it falls back to the text session automatically.
 
-<p align="center">
-  <img src="./.github/assets/evoharness-session-home.png" alt="EvoHarness session home" width="100%">
-</p>
-
-<p align="center">
-  <strong>✨ First-run view: runtime deck, slash commands, and the live harness surface in one place</strong>
-</p>
-
 ### 3. Configure Your Provider with `/setup`
 
 Inside the session, run:
@@ -183,14 +175,6 @@ EvoHarness will ask for four things:
 - 🤖 `Model`: the exact model name you want to use
 - 🔑 `API key`: paste it now, or leave it blank if you already keep it elsewhere
 - 🌐 `Base URL`: required for custom gateways and non-default endpoints
-
-<p align="center">
-  <img src="./.github/assets/evoharness-setup-guide.png" alt="EvoHarness setup prompt" width="100%">
-</p>
-
-<p align="center">
-  <strong>🛠️ `/setup` is the fastest way to make the session actually usable</strong>
-</p>
 
 ### Which Provider Profile Should You Choose?
 
@@ -294,14 +278,58 @@ Current runtime surface:
 
 ---
 
-<a id="documentation"></a>
-## 📚 Documentation (•‿•)
+<a id="modes-commands"></a>
+## 🎛️🧭 Modes and Commands (•‿•)
 
-- [Architecture](./docs/architecture.md)
-- [Feature Matrix (zh-CN)](./docs/feature-matrix.zh-CN.md)
-- [Project Positioning (zh-CN)](./docs/project-positioning.zh-CN.md)
-- [Roadmap (zh-CN)](./docs/roadmap.zh-CN.md)
-- [OpenHarness Reference](./docs/openharness-reference.md)
+<p align="center">
+  <strong>🧠 provider + model • 🔐 permission mode • 🧩 active workflow command • 📡 live surface counts</strong>
+</p>
+
+Once the session opens, EvoHarness keeps its operating state visible in the runtime deck instead of hiding it.
+
+The main runtime fields mean:
+
+- 🧠 `provider` + `model`: which backend family and model you are talking to right now
+- 🔐 `mode`: the current permission mode
+- 🧩 `/<workspace-command>`: the active markdown workflow, such as `/read-only-inspect`
+- 📡 `surface`: the live counts for commands, skills, agents, plugins, and MCP
+- 💓 `pulse`: the current tasks, approvals, sessions, and token counters
+
+Permission modes are simple:
+
+- `default`: read-only work runs freely; mutating actions ask for approval
+- `plan`: blocks mutating tools so you can inspect, map, and plan safely
+- `full-auto`: allows actions automatically inside sandbox bounds
+
+Command layers are also explicit:
+
+- `/help`, `/setup`, `/doctor`, `/permissions`, `/resume`, `/plugins`, and `/mcp` are session slash commands
+- `/<workspace-command>` activates one markdown workflow command from `.claude/commands/`
+- skills are on-demand workflow guides
+- agents are bounded delegates
+- plugins bundle commands, skills, agents, and MCP surfaces together
+
+Good first commands inside the session:
+
+```text
+/help
+/doctor
+/commands
+/skills
+/agents
+/mcp
+/permissions
+/read-only-inspect auth flow
+```
+
+If you want the same view from the CLI before chatting:
+
+```bash
+evoh commands-list --workspace .
+evoh agents-list --workspace .
+evoh tools-list --workspace .
+evoh mcp-list --workspace . --kind all
+```
 
 ---
 
