@@ -17,49 +17,73 @@
   <strong>English</strong> | <a href="./README.zh-CN.md">ZH-CN</a>
 </p>
 
-## 🧠 Controlled Self-Evolution (-_-)
+<p align="center">
+  <strong>EvoHarness delivers terminal-native agent infrastructure:</strong>
+  tools, commands, skills, agents, plugins, MCP, memory, approvals, and controlled self-evolution.
+</p>
+
+<p align="center">
+  <strong>Build with the project:</strong> shape an open, visible, and research-grade harness for coding workflows.
+</p>
+
+<p align="center">
+  <a href="#quick-start"><img src="https://img.shields.io/badge/QUICK_START-5_MIN-0EA5E9?style=for-the-badge" alt="Quick Start"></a>
+  <a href="#harness-architecture"><img src="https://img.shields.io/badge/HARNESS-ARCHITECTURE-F472B6?style=for-the-badge" alt="Harness Architecture"></a>
+  <a href="#controlled-self-evolution"><img src="https://img.shields.io/badge/SELF_EVOLUTION-CONTROLLED-84CC16?style=for-the-badge" alt="Controlled Self Evolution"></a>
+  <a href="#plugin-mcp-ecosystem"><img src="https://img.shields.io/badge/PLUGINS-7-F59E0B?style=for-the-badge" alt="Plugins"></a>
+  <a href="#documentation"><img src="https://img.shields.io/badge/DOCS-5_GUIDES-334155?style=for-the-badge" alt="Docs"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/LICENSE-Apache_2.0-FACC15?style=for-the-badge" alt="License"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-%3E%3D3.11-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/React%2BInk-TUI-61DAFB?logo=react&logoColor=white" alt="React Ink TUI">
+  <img src="https://img.shields.io/badge/tools-26-14B8A6" alt="26 tools">
+  <img src="https://img.shields.io/badge/commands-32-0EA5E9" alt="32 commands">
+  <img src="https://img.shields.io/badge/skills-34-06B6D4" alt="34 skills">
+  <img src="https://img.shields.io/badge/agents-32-3B82F6" alt="32 agents">
+  <img src="https://img.shields.io/badge/plugins-7-F59E0B" alt="7 plugins">
+  <img src="https://img.shields.io/badge/MCP_servers-10-8B5CF6" alt="10 MCP servers">
+  <img src="https://img.shields.io/badge/MCP_tools-29-7C3AED" alt="29 MCP tools">
+</p>
+
+<a id="controlled-self-evolution"></a>
+## 🧠✨ Controlled Self-Evolution (-_-)
 
 <div align="center">
-  <img src="./.github/assets/evoharness-self-evolution.svg" alt="Controlled self-evolution pipeline" width="100%">
+  <img src="./.github/assets/evoharness-promotion-gate.png" alt="EvoHarness promotion gate" width="100%">
 </div>
 
-EvoHarness frames self-evolution as a **bounded systems loop** over the harness itself, not as an unconstrained autonomous behavior policy.
+<p align="center">
+  <strong>🌌 Evidence, operators, candidate patches, and promotion paths 🩵</strong>
+</p>
 
-The central research claim is that long-horizon improvement becomes tractable when three constraints hold simultaneously:
+EvoHarness treats self-evolution as **control over the harness surface**, not as unconstrained agent autonomy.
 
-1. **evidence is real**: evolution is grounded in archived sessions, tool trajectories, approvals, failures, and workspace state
-2. **action space is bounded**: changes are proposed through explicit operator families such as `distill_memory`, `revise_command`, `revise_skill`, or `grow_ecosystem`
-3. **promotion is governed**: candidate patches remain subject to validation, promotion policy, and rollback discipline
+The real question is not "can the model rewrite itself once," but:
 
-In EvoHarness, the evolution target is the harness surface itself:
+- 🧾 **when to evolve**: use real sessions, traces, failures, approvals, and workspace state as evidence
+- 🎛️ **which operator to choose**: `revise_command`, `revise_skill`, `distill_memory`, `grow_ecosystem`, or `stop`
+- 🛑 **when not to evolve**: low-value changes should be filtered before mutation
+- ✅ **how changes enter the runtime**: candidate patches must pass validation, then get promoted, held, or rolled back
 
-- commands and skills
-- agents and plugin bundles
-- MCP registries and workflow ecosystems
-- persistent memory and instruction layers
-- promotion and safety policy surfaces
+So the loop can be read in one line:
 
-The operational loop is:
+**evidence -> operator choice -> candidate patch -> validation -> promote / hold / rollback**
 
-1. archive sessions, traces, tool histories, and failure evidence
-2. analyze where the harness under-supported the task or over-explored the search space
-3. choose a bounded operator family
-4. materialize candidate patches against the real workspace
-5. validate before promotion
-6. promote, hold, or rollback
+In short, EvoHarness studies self-evolution as a **long-horizon operator-control problem** over commands, skills, agents, plugins, MCP, memory, and policy surfaces.
 
-This design emphasizes:
+<p align="center">
+  <img src="./.github/assets/evoharness-pony-evolution-duo.png" alt="EvoHarness pony evolution duo" width="88%">
+</p>
 
-- evidence-grounded evolution rather than speculative self-editing
-- explicit operator semantics rather than free-form mutation
-- candidate-first progression rather than immediate mutation of the active surface
-- promotion and rollback discipline rather than irreversible drift
-- workspace-native artifacts instead of hidden internal state
-
-From a research standpoint, EvoHarness is useful because it exposes **where** improvement pressure comes from, **what** is allowed to change, and **how** those changes are promoted into the active runtime.
+<p align="center">
+  <strong>🐴 From saddle pony to evolution pony, still cute all the way ✨🩵</strong>
+</p>
 
 ---
 
+<a id="harness-architecture"></a>
 ## 🧩 Harness Architecture \(^_^)/ 
 
 <div align="center">
@@ -89,6 +113,7 @@ In short: the harness is not background glue, it is the primary engineered surfa
 
 ---
 
+<a id="quick-start"></a>
 ## 🚀 Quick Start \(^o^)/
 
 ### Requirements
@@ -139,6 +164,7 @@ evoh mcp-list --workspace . --kind all
 
 ---
 
+<a id="plugin-mcp-ecosystem"></a>
 ## 🕸️ Plugin and MCP Ecosystem (╭☞•́⍛•̀)╭☞
 
 Bundled plugins:
@@ -176,6 +202,7 @@ Current runtime surface:
 
 ---
 
+<a id="documentation"></a>
 ## 📚 Documentation (•‿•)
 
 - [Architecture](./docs/architecture.md)

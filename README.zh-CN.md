@@ -17,53 +17,73 @@
   <a href="./README.md">English</a> | <strong>简体中文</strong>
 </p>
 
-## 🧠 可控自进化
+<p align="center">
+  <strong>EvoHarness 提供终端原生 Agent Harness 基础设施：</strong>
+  tools、commands、skills、agents、plugins、MCP、memory、approvals，以及可控自进化。
+</p>
+
+<p align="center">
+  <strong>一起完善项目：</strong>把开放、可见、可研究的 coding harness 打磨成真正可演进的工程表面。
+</p>
+
+<p align="center">
+  <a href="#quick-start"><img src="https://img.shields.io/badge/QUICK_START-5_MIN-0EA5E9?style=for-the-badge" alt="快速开始"></a>
+  <a href="#harness-architecture"><img src="https://img.shields.io/badge/HARNESS-ARCHITECTURE-F472B6?style=for-the-badge" alt="Harness 架构"></a>
+  <a href="#controlled-self-evolution"><img src="https://img.shields.io/badge/SELF_EVOLUTION-CONTROLLED-84CC16?style=for-the-badge" alt="可控自进化"></a>
+  <a href="#plugin-mcp-ecosystem"><img src="https://img.shields.io/badge/PLUGINS-7-F59E0B?style=for-the-badge" alt="Plugin 生态"></a>
+  <a href="#documentation"><img src="https://img.shields.io/badge/DOCS-5_GUIDES-334155?style=for-the-badge" alt="文档"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/LICENSE-Apache_2.0-FACC15?style=for-the-badge" alt="License"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-%3E%3D3.11-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/React%2BInk-TUI-61DAFB?logo=react&logoColor=white" alt="React Ink TUI">
+  <img src="https://img.shields.io/badge/tools-26-14B8A6" alt="26 tools">
+  <img src="https://img.shields.io/badge/commands-32-0EA5E9" alt="32 commands">
+  <img src="https://img.shields.io/badge/skills-34-06B6D4" alt="34 skills">
+  <img src="https://img.shields.io/badge/agents-32-3B82F6" alt="32 agents">
+  <img src="https://img.shields.io/badge/plugins-7-F59E0B" alt="7 plugins">
+  <img src="https://img.shields.io/badge/MCP_servers-10-8B5CF6" alt="10 MCP servers">
+  <img src="https://img.shields.io/badge/MCP_tools-29-7C3AED" alt="29 MCP tools">
+</p>
+
+<a id="controlled-self-evolution"></a>
+## 🧠✨ 可控自进化
 
 <div align="center">
-  <img src="./.github/assets/evoharness-self-evolution.svg" alt="Controlled self-evolution pipeline" width="100%">
+  <img src="./.github/assets/evoharness-promotion-gate.png" alt="EvoHarness promotion gate" width="100%">
 </div>
 
-EvoHarness 将“自进化”定义为一个**受约束的系统闭环**，作用对象不是模型本身，而是 harness 的可见工程表面。
+<p align="center">
+  <strong>🌌 证据、算子、候选补丁、验证关口与晋升路径 🩵</strong>
+</p>
 
-这个方向成立的前提有三点：
+EvoHarness 把“自进化”看成对 harness 表面的**受控演化**，而不是放任 agent 自己随意变异。
 
-1. **证据真实**：进化依据来自真实 sessions、tool histories、approvals、failures 与 workspace state  
-2. **动作有界**：变化通过显式 operator family 提出，例如 `distill_memory`、`revise_command`、`revise_skill`、`grow_ecosystem`  
-3. **提升受治理**：candidate patch 必须经过 validation、promotion policy 与 rollback discipline  
+真正的问题不是“模型能不能改自己一次”，而是：
 
-在 EvoHarness 中，进化目标主要包括：
+- 🧾 **什么时候值得进化**：依据真实 sessions、traces、failures、approvals 与 workspace state
+- 🎛️ **该选哪种算子**：`revise_command`、`revise_skill`、`distill_memory`、`grow_ecosystem`，或者 `stop`
+- 🛑 **什么时候不该进化**：低价值变化要在真正改动前被拦住
+- ✅ **变化如何进入系统**：candidate patch 必须先过 validation，再决定 promote、hold 或 rollback
 
-- commands 与 skills
-- agents 与 plugin bundles
-- MCP registries 与 workflow ecosystems
-- persistent memory 与 instruction layers
-- promotion 与 safety policy surfaces
+所以这个闭环可以压缩成一句话：
 
-运行闭环是：
+**evidence -> operator choice -> candidate patch -> validation -> promote / hold / rollback**
 
-1. archive sessions、traces、tool histories 与 failure evidence  
-2. analyze harness 在哪里欠支持任务、或过度探索搜索空间  
-3. choose a bounded operator family  
-4. materialize candidate patches against the real workspace  
-5. validate before promotion  
-6. promote、hold 或 rollback  
+一句话概括：EvoHarness 研究的不是“自由变异”，而是面向长期任务的**自进化控制**，作用对象是 commands、skills、agents、plugins、MCP、memory 与 policy surfaces。
 
-它强调：
+<p align="center">
+  <img src="./.github/assets/evoharness-pony-evolution-duo.png" alt="EvoHarness pony evolution duo" width="88%">
+</p>
 
-- 证据驱动，而不是凭空自改
-- operator 语义显式，而不是自由变异
-- candidate-first progression，而不是直接改动 active surface
-- promotion / rollback discipline，而不是不可逆漂移
-- workspace-native artifacts，而不是隐藏内部状态
-
-从研究角度看，EvoHarness 的价值在于把这三件事都暴露出来：
-
-- 改进压力来自哪里
-- 允许改变什么
-- 这些变化如何进入 active runtime
+<p align="center">
+  <strong>🐴 从普通马鞍小马到进化小马，一路都要可可爱爱 ✨🩵</strong>
+</p>
 
 ---
 
+<a id="harness-architecture"></a>
 ## 🧩 Harness 架构 \(^_^)/ 
 
 <div align="center">
@@ -93,6 +113,7 @@ EvoHarness 把 harness 暴露成一个可见、可扩展、可研究的工程表
 
 ---
 
+<a id="quick-start"></a>
 ## 🚀 快速开始
 
 ### 环境要求
@@ -143,6 +164,7 @@ evoh mcp-list --workspace . --kind all
 
 ---
 
+<a id="plugin-mcp-ecosystem"></a>
 ## 🕸️ Plugin 与 MCP 生态
 
 Bundled plugins:
@@ -176,6 +198,7 @@ Bundled MCP surfaces 覆盖：
 
 ---
 
+<a id="documentation"></a>
 ## 📚 文档
 
 - [Architecture](./docs/architecture.md)
