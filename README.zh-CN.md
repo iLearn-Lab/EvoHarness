@@ -3,49 +3,115 @@
 </div>
 
 <div align="center">
-
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](./pyproject.toml)
-[![Runtime](https://img.shields.io/badge/Terminal--Native-Agent_Harness-0B132B?style=for-the-badge&logo=gnometerminal&logoColor=white)](./src)
-[![Tools](https://img.shields.io/badge/Tools-26-14B8A6?style=for-the-badge)](./src/evo_harness/harness/tools.py)
-[![Commands](https://img.shields.io/badge/Commands-32-0EA5E9?style=for-the-badge)](./.claude/commands)
-[![Plugins](https://img.shields.io/badge/Plugins-7-F59E0B?style=for-the-badge)](./plugins)
-[![MCP](https://img.shields.io/badge/MCP_Servers-10-8B5CF6?style=for-the-badge)](./.evo-harness/mcp.json)
-[![License](https://img.shields.io/badge/License-Apache--2.0-FACC15?style=for-the-badge)](./LICENSE)
-
+  <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="94%">
 </div>
+
+<p align="center">
+  <a href="./README.md">English</a> | <strong>简体中文</strong>
+</p>
+
+<p align="center">
+  <strong>EvoHarness</strong> 是一个面向 coding workflows 与可控自进化研究的 terminal-native agent harness <code>(^_^)/</code>
+</p>
+
+<p align="center">
+  markdown-first | plugin-native | MCP-ready | session-aware | self-evolving
+</p>
+
+<p align="center">
+  <a href="#-快速开始"><img src="https://img.shields.io/badge/Quick_Start-python_-m_evo__harness-2563EB?style=for-the-badge" alt="Quick Start"></a>
+  <a href="#-关键-harness-能力"><img src="https://img.shields.io/badge/Harness-Surfaces-0EA5E9?style=for-the-badge" alt="Harness Surfaces"></a>
+  <a href="#-可控自进化"><img src="https://img.shields.io/badge/Self--Evolution-Controlled-7C3AED?style=for-the-badge" alt="Self Evolution"></a>
+  <a href="#-harness-架构"><img src="https://img.shields.io/badge/Architecture-Visible-334155?style=for-the-badge" alt="Architecture"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/tools-26-14B8A6?style=flat-square" alt="Tools">
+  <img src="https://img.shields.io/badge/commands-32-0EA5E9?style=flat-square" alt="Commands">
+  <img src="https://img.shields.io/badge/skills-34-06B6D4?style=flat-square" alt="Skills">
+  <img src="https://img.shields.io/badge/agents-32-3B82F6?style=flat-square" alt="Agents">
+  <img src="https://img.shields.io/badge/plugins-7-F59E0B?style=flat-square" alt="Plugins">
+  <img src="https://img.shields.io/badge/mcp_servers-10-8B5CF6?style=flat-square" alt="MCP Servers">
+</p>
+
+EvoHarness 的核心不是泛化的 “agent UI”，而是 **harness research**：
+
+- 终端原生 coding agent 应该如何暴露 tools、workflow surfaces 与 governance
+- archived runtime evidence 如何驱动 **controlled** self-evolution
+- markdown、plugins 与 MCP 如何成为真实的研究与工程表面
+
+---
+
+## ✨ 关键 Harness 能力
 
 <div align="center">
-
-[English](./README.md) | **简体中文**
-
+  <img src="./.github/assets/evoharness-features.svg" alt="EvoHarness key harness features" width="100%">
 </div>
 
-**EvoHarness** 是一个面向 coding workflows 与可控自进化研究的 terminal-native agent harness。  
-它把 harness 本身显式化了：tools、commands、skills、agents、plugins、MCP、memory、approvals、sessions 与 evolution operators 都是可见、可改、可检查的 `(^_^)/`
+EvoHarness 主要由五个可见表面组成：
 
-这个 GitHub 发布目录是精简公开版。  
-它保留了 runtime、frontend、plugins、默认生态和 docs，同时移除了 tests、examples、cache 和本地生成文件 `(._.)`
-
----
-
-## 核心定位 `\(^o^)/`
-
-- terminal-native runtime，面向真实 coding session
-- markdown-first workflow surfaces，用 `.claude/` 组织 commands / skills / agents
-- plugin-native ecosystem，用 `plugins/` 扩展能力
-- MCP-ready architecture，支持 tools / resources / prompts
-- controlled self-evolution，强调 trace、operator、candidate、validation、promote / rollback
+- **Agent Loop**：迭代式 tool-use 与 session control
+- **Harness Toolkit**：files、shell、search、task、registry、MCP、subagent 工具
+- **Context & Memory**：prompt assembly、instructions、archive、resume
+- **Governance**：approvals、permissions、hooks、promotion discipline
+- **Ecosystem**：plugins、MCP、commands、skills、agents 作为一等运行时资产
 
 ---
 
-## 快速开始 `(^_^)/`
+## 🧠 可控自进化
+
+<div align="center">
+  <img src="./.github/assets/evoharness-self-evolution.svg" alt="Controlled self-evolution pipeline" width="100%">
+</div>
+
+EvoHarness 对“自进化”的处理更偏 **bounded runtime pipeline**，而不是无边界自治循环。
+
+主流程是：
+
+1. archive 真实 sessions、tool histories 与 runtime traces
+2. analyze failure modes、ecosystem gaps 与 coordination pressure
+3. 在小范围 operator family 中做选择，例如 `stop`、`distill_memory`、`revise_command`、`revise_skill`、`grow_ecosystem`
+4. 针对真实 workspace 生成 candidate patches
+5. validate before promotion
+6. promote、hold 或 rollback
+
+它强调：
+
+- failure modes 可观测
+- operator choice 显式化
+- candidate-first evolution
+- promotion / rollback discipline
+- workspace-native artifacts，而不是隐藏内部状态
+
+---
+
+## 🧩 Harness 架构
+
+<div align="center">
+  <img src="./.github/assets/evoharness-architecture.svg" alt="EvoHarness architecture overview" width="100%">
+</div>
+
+运行时把这些部分连接起来：
+
+- terminal interaction 与 slash-command control
+- tool execution、approvals、tasks、session state
+- `.claude/` 里的可见 workflow surfaces
+- plugin 与 MCP ecosystem
+- memory、analytics 与 evolution planning
+
+这个项目的主要架构立场是：**harness 不是背景胶水，而是主要研究对象。**
+
+---
+
+## 🚀 快速开始
 
 ### 环境要求
 
 - Python 3.11+
-- Node.js 18+（React/Ink terminal frontend）
+- Node.js 18+（如果你要用 React/Ink terminal frontend）
 
-### 源码目录直接启动
+### 最快启动方式
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
@@ -53,11 +119,14 @@ cd EvoHarness
 python -m evo_harness
 ```
 
-首次 TUI 启动时，如果本机有 `npm`，前端依赖会自动安装。
+如果本机有 `npm`，首次 TUI 启动时前端依赖会自动安装 `(^_^)/`
 
 ### 可选安装命令别名
 
+如果你想直接使用更短的命令：
+
 ```bash
+python -m pip install -e .
 evoh
 ```
 
@@ -71,75 +140,21 @@ evoh agents-list --workspace .
 evoh mcp-list --workspace . --kind all
 ```
 
----
-
-## 当前 release surface `(>_<)`
-
-- **26 builtin tools**
-- **32 markdown commands**
-- **34 skills**
-- **32 agents**
-- **7 bundled plugins**
-- **10 MCP servers**
-- MCP 侧合计 **29 tools / 27 resources / 10 prompts**
-
-这个仓库把 harness 当成真实 workspace 来做，不只是一个 Python package。  
-也就是说 `.claude/`、`plugins/`、`.evo-harness/mcp.json` 本身就是产品 surface 的一部分。
-
----
-
-## 可控自进化 `(-_-)`
-
-EvoHarness 对“自进化”的处理更偏 systems / runtime research，而不是口号式描述。
-
-主要流程：
-
-1. archive 真实 sessions 与 runtime traces
-2. analyze harness 在哪里 stall、over-explore 或 ecosystem support 不足
-3. propose operator，例如 `stop`、`distill_memory`、`revise_command`、`revise_skill`、`grow_ecosystem`
-4. produce candidate changes
-5. validate before promotion
-6. promote、hold，或 rollback
-
-```mermaid
-flowchart LR
-    U[User Task] --> R[Harness Runtime]
-    R --> S[Archived Sessions / Traces]
-    S --> A[Analysis + Evolution Bridge]
-    A --> O[Operator Proposal]
-    O --> C[Candidate Patch]
-    C --> V[Validation Gate]
-    V -->|promote| P[Promoted Workspace]
-    V -->|rollback| B[Rollback Path]
-    V -->|hold| K[Candidate Only]
-```
-
----
-
-## 仓库结构 `(^_^)`
+### 会话内常用入口
 
 ```text
-EvoHarness/
-  src/evo_harness/         # core runtime, CLI, harness modules, evolution bridge
-  frontend/terminal/       # React + Ink terminal frontend
-  plugins/                 # bundled plugin ecosystem
-  .claude/                 # default commands, skills, and agents
-  .evo-harness/            # default MCP and marketplace registry
-  docs/                    # architecture and positioning docs
-  scripts/                 # live / chat / self-evolution workbenches
-  CLAUDE.md                # public project instruction surface
+/help
+/permissions
+/resume
+/plugins
+/plugins marketplaces
+/docs-refresh onboarding flow
+/workflow-blueprint provider debugging
 ```
-
-这个 GitHub-ready release 已经去掉：
-
-- `tests/`
-- `examples/`
-- `node_modules/`
-- runtime logs, cache, generated local state
 
 ---
 
-## 插件与 MCP 生态 `\(^o^)/`
+## 🕸️ Plugin 与 MCP 生态
 
 Bundled plugins:
 
@@ -151,25 +166,54 @@ Bundled plugins:
 - `docs-foundry`
 - `session-lab`
 
-Bundled local MCP servers:
+Bundled local MCP surfaces 覆盖：
 
-- `workspace-docs`
-- `workspace-intel`
-- `quality-gate`
-- `docs-gap`
-- `session-lab`
-- plus plugin-scoped MCP surfaces
+- docs search 与 repair
+- workspace surface inspection
+- release-readiness review
+- session 与 approval forensics
+- public-web research
+- plugin 与 workflow design
+
+当前 runtime surface：
+
+- **26 builtin tools**
+- **32 commands**
+- **34 skills**
+- **32 agents**
+- **7 plugins**
+- **10 MCP servers**
+- **29 MCP tools / 27 MCP resources / 10 MCP prompts**
 
 ---
 
-## 图片与素材
+## 📚 文档
 
-仓库已经包含一个 GitHub banner。
-
-下一轮需要的图片、你可以提供的素材，以及 AI 生成 prompt，见 [docs/ASSET_PLAN.md](./docs/ASSET_PLAN.md)。
+- [Architecture](./docs/architecture.md)
+- [Feature Matrix (zh-CN)](./docs/feature-matrix.zh-CN.md)
+- [Project Positioning (zh-CN)](./docs/project-positioning.zh-CN.md)
+- [Roadmap (zh-CN)](./docs/roadmap.zh-CN.md)
+- [OpenHarness Reference](./docs/openharness-reference.md)
 
 ---
 
-## License
+## 📝 引用
+
+如果你希望将 EvoHarness 作为软件系统引用：
+
+```bibtex
+@software{evoharness2026,
+  title  = {EvoHarness: A Terminal-Native Agent Harness with Controlled Self-Evolution},
+  author = {EvoHarness Contributors},
+  year   = {2026},
+  url    = {https://github.com/HITSZ-DS/EvoHarness}
+}
+```
+
+同时也提供了 [CITATION.cff](./CITATION.cff)。
+
+---
+
+## 📄 License
 
 Apache-2.0，见 [LICENSE](./LICENSE)。

@@ -1,0 +1,111 @@
+<svg width="1600" height="640" viewBox="0 0 1600 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="1" stop-color="#EEF4FB"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FBBF24"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+    <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F472B6"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#2DD4BF"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="640" rx="28" fill="url(#card)"/>
+  <text x="72" y="72" fill="#0F172A" font-size="42" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">✨ EvoHarness Key Research Surfaces</text>
+  <line x1="72" y1="96" x2="1528" y2="96" stroke="#CBD5E1" stroke-width="2"/>
+
+  <g transform="translate(72 128)">
+    <rect width="272" height="436" rx="18" fill="#FFFFFF" stroke="#D6E3F3" stroke-width="2"/>
+    <text x="28" y="48" fill="#0F172A" font-size="28" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">🌀 Agent Loop</text>
+    <rect x="24" y="76" width="120" height="32" rx="8" fill="url(#blue)"/>
+    <text x="84" y="97" text-anchor="middle" fill="white" font-size="15" font-family="Consolas, monospace" font-weight="700">ENGINE</text>
+    <rect x="24" y="128" width="224" height="116" rx="14" fill="#111827"/>
+    <path d="M136 154C164 154 190 167 207 190" stroke="#22D3EE" stroke-width="10" stroke-linecap="round"/>
+    <path d="M200 178L214 198L190 199" fill="#22D3EE"/>
+    <path d="M136 218C108 218 82 205 65 182" stroke="#22D3EE" stroke-width="10" stroke-linecap="round"/>
+    <path d="M72 194L58 174L82 173" fill="#22D3EE"/>
+    <path d="M136 168L163 202H145L154 226L109 193H129L120 168H136Z" fill="#38BDF8"/>
+    <text x="28" y="286" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• streaming tool-call cycle</text>
+    <text x="28" y="322" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• iterative observation and action</text>
+    <text x="28" y="358" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• query-time runtime control</text>
+    <text x="28" y="394" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• session-aware interaction state</text>
+  </g>
+
+  <g transform="translate(376 128)">
+    <rect width="272" height="436" rx="18" fill="#FFFFFF" stroke="#D6E3F3" stroke-width="2"/>
+    <text x="28" y="48" fill="#0F172A" font-size="28" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">🧰 Harness Toolkit</text>
+    <rect x="24" y="76" width="124" height="32" rx="8" fill="url(#teal)"/>
+    <text x="86" y="97" text-anchor="middle" fill="white" font-size="15" font-family="Consolas, monospace" font-weight="700">26 TOOLS</text>
+    <rect x="24" y="128" width="224" height="116" rx="14" fill="#111827"/>
+    <rect x="78" y="182" width="120" height="34" rx="10" fill="#14B8A6"/>
+    <rect x="92" y="160" width="52" height="24" rx="8" stroke="#14B8A6" stroke-width="8"/>
+    <path d="M84 168L64 148M104 164L96 140M166 164L184 144M188 182L210 166" stroke="#2DD4BF" stroke-width="8" stroke-linecap="round"/>
+    <text x="28" y="286" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• filesystem, shell, search, JSON</text>
+    <text x="28" y="322" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• registry, task, MCP, subagent tools</text>
+    <text x="28" y="358" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• markdown-first skill loading</text>
+    <text x="28" y="394" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• workspace-native workflow packaging</text>
+  </g>
+
+  <g transform="translate(680 128)">
+    <rect width="272" height="436" rx="18" fill="#FFFFFF" stroke="#D6E3F3" stroke-width="2"/>
+    <text x="28" y="48" fill="#0F172A" font-size="28" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">🧠 Context &amp; Memory</text>
+    <rect x="24" y="76" width="140" height="32" rx="8" fill="url(#violet)"/>
+    <text x="94" y="97" text-anchor="middle" fill="white" font-size="15" font-family="Consolas, monospace" font-weight="700">PERSISTENT</text>
+    <rect x="24" y="128" width="224" height="116" rx="14" fill="#111827"/>
+    <path d="M112 164C90 164 72 181 72 202C72 222 90 238 112 238H164C189 238 208 219 208 194C208 172 190 154 168 154C160 154 153 156 147 161C140 148 127 140 112 140C91 140 74 153 70 173" stroke="#A78BFA" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M118 188H164M118 212H182" stroke="#C4B5FD" stroke-width="8" stroke-linecap="round"/>
+    <text x="28" y="286" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• system prompt assembly</text>
+    <text x="28" y="322" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• CLAUDE.md and memory surfaces</text>
+    <text x="28" y="358" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• session archive and resume paths</text>
+    <text x="28" y="394" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• context-safe output shaping</text>
+  </g>
+
+  <g transform="translate(984 128)">
+    <rect width="272" height="436" rx="18" fill="#FFFFFF" stroke="#D6E3F3" stroke-width="2"/>
+    <text x="28" y="48" fill="#0F172A" font-size="28" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">🛡️ Governance</text>
+    <rect x="24" y="76" width="146" height="32" rx="8" fill="url(#orange)"/>
+    <text x="97" y="97" text-anchor="middle" fill="white" font-size="15" font-family="Consolas, monospace" font-weight="700">PERMISSIONS</text>
+    <rect x="24" y="128" width="224" height="116" rx="14" fill="#111827"/>
+    <path d="M136 152L188 172V206C188 232 166 248 136 258C106 248 84 232 84 206V172L136 152Z" stroke="#FBBF24" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M116 204L130 218L158 186" stroke="#FACC15" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="28" y="286" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• approval modes and safety budgets</text>
+    <text x="28" y="322" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• path and command policy checks</text>
+    <text x="28" y="358" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• hook-aware tool execution</text>
+    <text x="28" y="394" fill="#1E293B" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• promotion and rollback discipline</text>
+  </g>
+
+  <g transform="translate(1288 128)">
+    <rect width="240" height="436" rx="18" fill="#FFFFFF" stroke="#D6E3F3" stroke-width="2"/>
+    <text x="26" y="48" fill="#0F172A" font-size="28" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">🕸️ Ecosystem</text>
+    <rect x="24" y="76" width="134" height="32" rx="8" fill="url(#pink)"/>
+    <text x="91" y="97" text-anchor="middle" fill="white" font-size="15" font-family="Consolas, monospace" font-weight="700">PLUGINS + MCP</text>
+    <rect x="24" y="128" width="192" height="116" rx="14" fill="#111827"/>
+    <circle cx="120" cy="178" r="10" fill="#EC4899"/>
+    <circle cx="74" cy="202" r="8" fill="#F472B6"/>
+    <circle cx="166" cy="202" r="8" fill="#F472B6"/>
+    <circle cx="64" cy="156" r="8" fill="#F472B6"/>
+    <circle cx="176" cy="156" r="8" fill="#F472B6"/>
+    <circle cx="120" cy="224" r="8" fill="#F472B6"/>
+    <path d="M120 178L74 202L166 202L120 178L64 156L176 156L120 224L74 202" stroke="#EC4899" stroke-width="5" stroke-linecap="round"/>
+    <text x="24" y="286" fill="#1E293B" font-size="19" font-family="Segoe UI, Inter, Arial, sans-serif">• plugin-scoped workflow bundles</text>
+    <text x="24" y="320" fill="#1E293B" font-size="19" font-family="Segoe UI, Inter, Arial, sans-serif">• MCP tools, resources, prompts</text>
+    <text x="24" y="354" fill="#1E293B" font-size="19" font-family="Segoe UI, Inter, Arial, sans-serif">• registry-aware growth surface</text>
+    <text x="24" y="388" fill="#1E293B" font-size="19" font-family="Segoe UI, Inter, Arial, sans-serif">• real workspace ecosystem design</text>
+  </g>
+</svg>

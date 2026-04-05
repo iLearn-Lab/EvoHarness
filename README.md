@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  Terminal-native agent harness for coding workflows and controlled self-evolution research <code>(^_^)/</code>
+  <strong>EvoHarness</strong> is a terminal-native agent harness for coding workflows and controlled self-evolution research <code>(^_^)/</code>
 </p>
 
 <p align="center">
@@ -19,20 +19,14 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-Launch_Now-2563EB?style=for-the-badge" alt="Quick Start"></a>
-  <a href="#core-surfaces"><img src="https://img.shields.io/badge/Surface-Commands_+_Skills_+_Agents-0EA5E9?style=for-the-badge" alt="Surface"></a>
-  <a href="#controlled-self-evolution"><img src="https://img.shields.io/badge/Self--Evolution-Controlled-7C3AED?style=for-the-badge" alt="Self Evolution"></a>
-  <a href="#plugin-and-mcp-ecosystem"><img src="https://img.shields.io/badge/Plugins_+_MCP-Bundled-F59E0B?style=for-the-badge" alt="Plugins and MCP"></a>
-  <a href="./docs/architecture.md"><img src="https://img.shields.io/badge/Docs-Architecture-334155?style=for-the-badge" alt="Docs"></a>
+  <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-python_-m_evo__harness-2563EB?style=for-the-badge" alt="Quick Start"></a>
+  <a href="#-key-harness-features"><img src="https://img.shields.io/badge/Harness-Surfaces-0EA5E9?style=for-the-badge" alt="Harness Surfaces"></a>
+  <a href="#-controlled-self-evolution"><img src="https://img.shields.io/badge/Self--Evolution-Controlled-7C3AED?style=for-the-badge" alt="Self Evolution"></a>
+  <a href="#-harness-architecture"><img src="https://img.shields.io/badge/Architecture-Visible-334155?style=for-the-badge" alt="Architecture"></a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/runtime-terminal--native-0F172A?style=flat-square" alt="Runtime">
-  <img src="https://img.shields.io/badge/license-Apache--2.0-FACC15?style=flat-square" alt="License">
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/tools-26-14B8A6?style=flat-square" alt="Tools">
   <img src="https://img.shields.io/badge/commands-32-0EA5E9?style=flat-square" alt="Commands">
   <img src="https://img.shields.io/badge/skills-34-06B6D4?style=flat-square" alt="Skills">
@@ -41,64 +35,78 @@
   <img src="https://img.shields.io/badge/mcp_servers-10-8B5CF6?style=flat-square" alt="MCP Servers">
 </p>
 
-> **EvoHarness** makes the harness itself explicit: tools, commands, skills, agents, plugins, MCP, memory, approvals, sessions, and evolution operators stay visible, editable, and inspectable.
->
-> This GitHub release is intentionally trimmed for publication. It keeps the runtime, frontend, plugins, default ecosystem, and docs, while removing tests, examples, caches, and local noise `(._.)`
+EvoHarness makes the harness itself explicit: tools, commands, skills, agents, plugins, MCP, memory, approvals, sessions, and evolution operators remain visible, editable, and inspectable.
+
+Its core orientation is not generic “agent UX”, but **harness research**:
+
+- how terminal-native coding agents should expose tools, workflow surfaces, and governance
+- how archived runtime evidence can drive **controlled** self-evolution
+- how markdown, plugins, and MCP can act as real research and engineering surfaces
 
 ---
 
-## Why EvoHarness
+## ✨ Key Harness Features
 
-<table>
-  <tr>
-    <td width="33%" valign="top">
-      <strong>Terminal Runtime</strong><br><br>
-      - interactive CLI / TUI<br>
-      - slash-command workflow control<br>
-      - tool execution, streaming, and approvals
-    </td>
-    <td width="33%" valign="top">
-      <strong>Markdown Workflow Surface</strong><br><br>
-      - 32 commands<br>
-      - 34 skills<br>
-      - 32 agents<br>
-      - repo-native workflow packaging
-    </td>
-    <td width="33%" valign="top">
-      <strong>Plugin + MCP</strong><br><br>
-      - 7 bundled plugins<br>
-      - 10 MCP servers<br>
-      - tools / resources / prompts<br>
-      - marketplace-ready layout
-    </td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top">
-      <strong>Governance</strong><br><br>
-      - approvals and permission modes<br>
-      - hooks and policy surfaces<br>
-      - session archives and task control
-    </td>
-    <td width="33%" valign="top">
-      <strong>Self-Evolution</strong><br><br>
-      - trace-to-plan bridge<br>
-      - revise command / skill / memory<br>
-      - candidate, promote, rollback<br>
-      - ecosystem growth operators
-    </td>
-    <td width="33%" valign="top">
-      <strong>Public Release Shape</strong><br><br>
-      - source, frontend, plugins, docs<br>
-      - public CLAUDE surface<br>
-      - bundled marketplace and MCP registry<br>
-      - clean GitHub-ready repository layout
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="./.github/assets/evoharness-features.svg" alt="EvoHarness key harness features" width="100%">
+</div>
+
+EvoHarness combines five visible surfaces:
+
+- **Agent Loop** for iterative tool-use and session control
+- **Harness Toolkit** for files, shell, search, task, registry, MCP, and subagent operations
+- **Context & Memory** for prompt assembly, instructions, archive, and resume
+- **Governance** for approvals, permissions, hooks, and promotion discipline
+- **Ecosystem** for plugins, MCP, commands, skills, and agents as first-class runtime artifacts
 
 ---
 
-## Quick Start
+## 🧠 Controlled Self-Evolution
+
+<div align="center">
+  <img src="./.github/assets/evoharness-self-evolution.svg" alt="Controlled self-evolution pipeline" width="100%">
+</div>
+
+EvoHarness treats self-evolution as a **bounded runtime pipeline** rather than an unconstrained autonomous loop.
+
+The main process is:
+
+1. archive real sessions, tool histories, and runtime traces
+2. analyze failure modes, ecosystem gaps, and repeated coordination pressure
+3. choose a small operator family such as `stop`, `distill_memory`, `revise_command`, `revise_skill`, or `grow_ecosystem`
+4. produce candidate patches against the real workspace
+5. validate before promotion
+6. promote, hold as candidate, or rollback
+
+This design emphasizes:
+
+- observable failure modes
+- explicit operator choice
+- candidate-first evolution
+- promotion and rollback discipline
+- workspace-native artifacts instead of hidden internal state
+
+---
+
+## 🧩 Harness Architecture
+
+<div align="center">
+  <img src="./.github/assets/evoharness-architecture.svg" alt="EvoHarness architecture overview" width="100%">
+</div>
+
+The runtime ties together:
+
+- terminal interaction and slash-command control
+- tool execution, approvals, tasks, and session state
+- visible workflow surfaces in `.claude/`
+- plugin and MCP ecosystems
+- memory, analytics, and evolution planning
+
+That is the main architectural stance of the project: the harness is not background glue, it is the primary system under study.
+
+---
+
+## 🚀 Quick Start
 
 ### Requirements
 
@@ -113,9 +121,7 @@ cd EvoHarness
 python -m evo_harness
 ```
 
-`python -m evo_harness` is the simplest entrypoint from a source checkout `(^_^)/`
-
-If `npm` is available, the frontend dependencies are installed automatically on the first TUI launch.
+If `npm` is available, frontend dependencies are installed automatically on the first TUI launch `(^_^)/`
 
 ### Optional Editable Install
 
@@ -150,82 +156,7 @@ evoh mcp-list --workspace . --kind all
 
 ---
 
-## Core Surfaces
-
-Current release surface:
-
-- **26 builtin tools** for files, search, shell, JSON, tasks, registry inspection, MCP, and subagents
-- **32 markdown commands** for repeatable terminal workflows
-- **34 skills** for on-demand workflow guidance
-- **32 agents** for bounded delegation and structured inspection
-- **7 bundled plugins** for web research, workspace ops, delivery, docs, sessions, safety, and ecosystem growth
-- **10 MCP servers** exposing **29 tools**, **27 resources**, and **10 prompts**
-
-The repo ships the harness as a **real workspace**, not only as a library.  
-That means `.claude/`, `plugins/`, and `.evo-harness/mcp.json` are part of the product surface `(._.)`
-
----
-
-## Controlled Self-Evolution
-
-EvoHarness treats self-evolution as a **controlled systems problem** rather than an aesthetic slogan.
-
-The main loop is:
-
-1. archive real sessions and runtime traces
-2. analyze where the harness stalled, over-explored, or under-supported the task
-3. propose an operator such as:
-   `stop`, `distill_memory`, `revise_command`, `revise_skill`, or `grow_ecosystem`
-4. produce candidate changes
-5. validate before promotion
-6. promote, keep as candidate, or rollback
-
-```mermaid
-flowchart LR
-    U[User Task] --> R[Harness Runtime]
-    R --> S[Archived Sessions / Traces]
-    S --> A[Analysis + Evolution Bridge]
-    A --> O[Operator Proposal]
-    O --> C[Candidate Patch]
-    C --> V[Validation Gate]
-    V -->|promote| P[Promoted Workspace]
-    V -->|rollback| B[Rollback Path]
-    V -->|hold| K[Candidate Only]
-```
-
-Research-wise, the emphasis is on:
-
-- observable failure modes
-- bounded operator choices
-- workspace-native evolution artifacts
-- promotion / rollback discipline
-
----
-
-## Repository Layout
-
-```text
-EvoHarness/
-  src/evo_harness/         # core runtime, CLI, harness modules, evolution bridge
-  frontend/terminal/       # React + Ink terminal frontend
-  plugins/                 # bundled plugin ecosystem
-  .claude/                 # default commands, skills, and agents
-  .evo-harness/            # default MCP and marketplace registry
-  docs/                    # architecture and project positioning docs
-  scripts/                 # live / chat / self-evolution workbenches
-  CLAUDE.md                # public project instruction surface
-```
-
-Trimmed from this GitHub-ready release:
-
-- `tests/`
-- `examples/`
-- `node_modules/`
-- runtime logs, caches, and generated local state
-
----
-
-## Plugin and MCP Ecosystem
+## 🕸️ Plugin and MCP Ecosystem
 
 Bundled plugins:
 
@@ -237,16 +168,7 @@ Bundled plugins:
 - `docs-foundry`
 - `session-lab`
 
-Bundled local MCP servers:
-
-- `workspace-docs`
-- `workspace-intel`
-- `quality-gate`
-- `docs-gap`
-- `session-lab`
-- plus plugin-scoped MCP surfaces for the corresponding plugins
-
-This gives the repo a practical default ecosystem for:
+Bundled local MCP surfaces cover:
 
 - docs search and repair
 - workspace surface inspection
@@ -255,23 +177,29 @@ This gives the repo a practical default ecosystem for:
 - public-web research
 - plugin and workflow design
 
----
+Current runtime surface:
 
-## Visual Assets `(._.)`
-
-The repository already includes one local banner for GitHub display.
-
-For the next visual pass, see [docs/ASSET_PLAN.md](./docs/ASSET_PLAN.md).
-
-That file lists:
-
-- which screenshots are best provided by you
-- which visuals are better generated or illustrated
-- ready-to-use prompts for AI-generated assets
+- **26 builtin tools**
+- **32 commands**
+- **34 skills**
+- **32 agents**
+- **7 plugins**
+- **10 MCP servers**
+- **29 MCP tools / 27 MCP resources / 10 MCP prompts**
 
 ---
 
-## Citation
+## 📚 Documentation
+
+- [Architecture](./docs/architecture.md)
+- [Feature Matrix (zh-CN)](./docs/feature-matrix.zh-CN.md)
+- [Project Positioning (zh-CN)](./docs/project-positioning.zh-CN.md)
+- [Roadmap (zh-CN)](./docs/roadmap.zh-CN.md)
+- [OpenHarness Reference](./docs/openharness-reference.md)
+
+---
+
+## 📝 Citation
 
 If you want to cite EvoHarness as software:
 
@@ -288,6 +216,6 @@ A machine-readable citation file is also provided in [CITATION.cff](./CITATION.c
 
 ---
 
-## License
+## 📄 License
 
 Apache-2.0. See [LICENSE](./LICENSE).
