@@ -84,32 +84,42 @@ In short, EvoHarness studies self-evolution as a **long-horizon operator-control
 ---
 
 <a id="harness-architecture"></a>
-## 🧩 Harness Architecture \(^_^)/ 
+## 🧩🛠️ Harness Architecture \(^_^)/ 
 
 <div align="center">
   <img src="./.github/assets/evoharness-architecture.svg" alt="EvoHarness architecture overview" width="100%">
 </div>
 
-EvoHarness makes the harness observable, countable, and evolvable.
+<p align="center">
+  <strong>👀 Visible surfaces • 🧱 Workspace-native control • 🛰️ Plugin + MCP ecosystem • 🧠 Long-horizon state</strong>
+</p>
 
-At the system surface, it exposes:
+EvoHarness is built around one architectural bet: the harness should be a **first-class system surface**, not hidden orchestration glue.
+
+What makes the architecture distinctive:
+
+- 👀 **visible by default**: tools, commands, skills, agents, plugins, and MCP stay inspectable in the workspace
+- 🧱 **workspace-native**: markdown, registries, settings, memory, and policy surfaces live as real project artifacts
+- 🧠 **long-horizon aware**: approvals, archived sessions, analytics, and evolution planning remain in the same runtime
+- 🧪 **research-ready**: the harness is observable, countable, and evolvable instead of disappearing behind a black box
+
+At the system surface, EvoHarness exposes:
 
 - 🛠️ **26 tools** for files, shell, search, tasks, registry, MCP, and subagents
-- 🧾 **32 commands** as workflow entry points
+- 📜 **32 commands** as workflow entry points
 - 🧠 **34 skills** as on-demand procedural guidance
 - 🤖 **32 agents** for bounded delegation
 - 🔌 **7 plugins** for workspace-native ecosystem growth
 - 🛰️ **10 MCP servers / 29 MCP tools** for external tools, resources, and prompts
 
-Architecturally, the runtime ties together:
+If you want to understand the project quickly, start here:
 
-- terminal-native control
-- markdown-native workflow packaging
-- plugin-native extensibility
-- MCP-native ecosystem access
-- memory, approvals, analytics, and evolution planning in the same runtime
+- 🚀 run `evoh doctor --workspace .` to inspect the resolved runtime surface
+- 🧭 run `evoh tools-list --workspace .`, `evoh commands-list --workspace .`, `evoh agents-list --workspace .`, and `evoh mcp-list --workspace . --kind all`
+- 📚 read [Architecture](./docs/architecture.md), [Project Positioning](./docs/project-positioning.zh-CN.md), and [Feature Matrix](./docs/feature-matrix.zh-CN.md)
+- 🧩 browse [plugins](./plugins), [.claude](./.claude), and [.evo-harness/mcp.json](./.evo-harness/mcp.json) to see the harness as a real workspace product
 
-In short: the harness is not background glue, it is the primary engineered surface `(^_^)`
+In short: EvoHarness is not just "an agent with tools"; it is a **visible, editable, and evolvable harness workspace** `(^_^)`
 
 ---
 
