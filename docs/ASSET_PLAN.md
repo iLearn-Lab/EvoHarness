@@ -42,12 +42,12 @@ These are good generation targets if you do not already have official visuals.
 | File | Purpose | Ratio | Suggested size |
 |------|---------|-------|----------------|
 | `.github/assets/evoharness-cli-promo.png` | stylized CLI promo image | `16:9` | `1792x1024` |
-| `.github/assets/evoharness-features.png` | feature infographic | `16:9` | `1792x1024` |
 | `.github/assets/evoharness-self-evolution.png` | self-evolution process visual | `16:9` | `1792x1024` |
 | `.github/assets/evoharness-architecture.png` | harness architecture visual | `16:9` | `1792x1024` |
 | `.github/assets/evoharness-ecosystem.png` | ecosystem visual | `16:9` | `1792x1024` |
 | `.github/assets/evoharness-benchmark-bg.png` | background for charts / results | `4:3` | `1600x1200` |
 | `.github/assets/evoharness-poster.png` | vertical poster / academic promo | `3:4` | `1536x2048` |
+| `.github/assets/evoharness-evo-pony.png` | cute self-evolution mascot / side illustration | `1:1` or `3:4` | `1024x1024` or `1536x2048` |
 
 ### C. Already Available In Repo
 
@@ -55,7 +55,6 @@ These already exist as SVG placeholders or working visuals:
 
 - `evoharness-wordmark.svg`
 - `evoharness-cli-demo.svg`
-- `evoharness-features.svg`
 - `evoharness-self-evolution.svg`
 - `evoharness-architecture.svg`
 - `evoharness-ecosystem.svg`
@@ -70,8 +69,9 @@ Based on the generator sizes you showed, use these defaults:
 |----------|------------|------------------|
 | Hero mark / mascot | `1:1` | `1024x1024` |
 | CLI screenshot or promo | `16:9` | `1792x1024` or `1920x1080` |
-| Feature / architecture / ecosystem figure | `16:9` | `1792x1024` |
+| Architecture / ecosystem / self-evolution figure | `16:9` | `1792x1024` |
 | Benchmark / result figure | `4:3` | `1600x1200` |
+| Cute mascot / side illustration | `1:1` or `3:4` | `1024x1024` or `1536x2048` |
 | Poster-style academic visual | `3:4` | `1536x2048` |
 | Tall paper companion image | `2:3` | `1365x2048` |
 | Mobile-only asset | `9:16` | `1080x1920` |
@@ -132,6 +132,21 @@ What to show:
 
 This one adds the most academic credibility.
 
+### 5. Optional Cute Mascot for the Self-Evolution Section
+
+Best ratio: `1:1`
+
+Recommended use:
+
+- side illustration near the self-evolution section
+- social post or poster accent
+- mascot-like reinforcement of the “evolution” theme
+
+Not recommended as:
+
+- the main academic process figure
+- a substitute for the actual pipeline / benchmark figure
+
 ---
 
 ## AI Generation Prompts
@@ -178,6 +193,14 @@ Best ratio: `16:9`
 A serious technical diagram showing controlled self-evolution for an agent harness: archived sessions and traces, analysis, bounded operator proposal, candidate patch generation, validation gate, promotion, hold, rollback, dark systems-research style, elegant academic visualization, blue cyan violet highlights, no decorative clutter
 ```
 
+### E2. Cute Evolution Pony Mascot
+
+Best ratio: `1:1`
+
+```text
+A cute cyber pony mascot for a project called EvoHarness, small research saddle and harness gear, blue-cyan palette, terminal-native systems vibe, glowing circuit details, friendly and adorable but still polished, soft academic sci-fi style, transparent background, high quality mascot illustration, not childish, not messy
+```
+
 ### F. Harness Architecture Figure
 
 Best ratio: `16:9`
@@ -221,3 +244,4 @@ If you want the fastest visual improvement, generate in this order:
 3. `16:9` harness architecture
 4. `16:9` ecosystem overview
 5. `4:3` benchmark figure background
+6. `1:1` cute evolution pony mascot

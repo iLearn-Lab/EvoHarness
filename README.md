@@ -31,9 +31,9 @@
 
 <p align="center">
   <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-python_-m_evo__harness-2563EB?style=for-the-badge" alt="Quick Start"></a>
-  <a href="#-key-harness-features"><img src="https://img.shields.io/badge/Harness-Surfaces-0EA5E9?style=for-the-badge" alt="Harness Surfaces"></a>
   <a href="#-controlled-self-evolution"><img src="https://img.shields.io/badge/Self--Evolution-Controlled-7C3AED?style=for-the-badge" alt="Self Evolution"></a>
   <a href="#-harness-architecture"><img src="https://img.shields.io/badge/Architecture-Visible-334155?style=for-the-badge" alt="Architecture"></a>
+  <a href="#-plugin-and-mcp-ecosystem"><img src="https://img.shields.io/badge/Ecosystem-Plugins_+_MCP-F59E0B?style=for-the-badge" alt="Ecosystem"></a>
 </p>
 
 <p align="center">
@@ -56,46 +56,46 @@ Its core orientation is **harness research**:
 
 ---
 
-## ✨ Key Harness Features \(^_^)/ 
-
-<div align="center">
-  <img src="./.github/assets/evoharness-features.svg" alt="EvoHarness key harness features" width="100%">
-</div>
-
-EvoHarness combines five high-leverage surfaces:
-
-- **Agent Loop** for iterative tool-use and session control
-- **Harness Toolkit** for files, shell, search, task, registry, MCP, and subagent operations
-- **Context & Memory** for prompt assembly, instructions, archive, and resume
-- **Governance** for approvals, permissions, hooks, and promotion discipline
-- **Ecosystem** for plugins, MCP, commands, skills, and agents as first-class runtime artifacts
-
----
-
 ## 🧠 Controlled Self-Evolution (-_-)
 
 <div align="center">
   <img src="./.github/assets/evoharness-self-evolution.svg" alt="Controlled self-evolution pipeline" width="100%">
 </div>
 
-EvoHarness treats self-evolution as a **bounded runtime pipeline** rather than an unconstrained autonomous loop.
+EvoHarness frames self-evolution as a **bounded systems loop** over the harness itself, not as an unconstrained autonomous behavior policy.
 
-The main process is:
+The central research claim is that long-horizon improvement becomes tractable when three constraints hold simultaneously:
 
-1. archive real sessions, tool histories, and runtime traces
-2. analyze failure modes, ecosystem gaps, and repeated coordination pressure
-3. choose a small operator family such as `stop`, `distill_memory`, `revise_command`, `revise_skill`, or `grow_ecosystem`
-4. produce candidate patches against the real workspace
+1. **evidence is real**: evolution is grounded in archived sessions, tool trajectories, approvals, failures, and workspace state
+2. **action space is bounded**: changes are proposed through explicit operator families such as `distill_memory`, `revise_command`, `revise_skill`, or `grow_ecosystem`
+3. **promotion is governed**: candidate patches remain subject to validation, promotion policy, and rollback discipline
+
+In EvoHarness, the evolution target is the harness surface itself:
+
+- commands and skills
+- agents and plugin bundles
+- MCP registries and workflow ecosystems
+- persistent memory and instruction layers
+- promotion and safety policy surfaces
+
+The operational loop is:
+
+1. archive sessions, traces, tool histories, and failure evidence
+2. analyze where the harness under-supported the task or over-explored the search space
+3. choose a bounded operator family
+4. materialize candidate patches against the real workspace
 5. validate before promotion
-6. promote, hold as candidate, or rollback
+6. promote, hold, or rollback
 
 This design emphasizes:
 
-- observable failure modes
-- explicit operator choice
-- candidate-first evolution
-- promotion and rollback discipline
+- evidence-grounded evolution rather than speculative self-editing
+- explicit operator semantics rather than free-form mutation
+- candidate-first progression rather than immediate mutation of the active surface
+- promotion and rollback discipline rather than irreversible drift
 - workspace-native artifacts instead of hidden internal state
+
+From a research standpoint, EvoHarness is useful because it exposes **where** improvement pressure comes from, **what** is allowed to change, and **how** those changes are promoted into the active runtime.
 
 ---
 
