@@ -1,10 +1,16 @@
-<p align="center">
-  <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="152">&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="760">
-</p>
+<table align="center">
+  <tr>
+    <td align="center" valign="middle" width="180">
+      <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="132">
+    </td>
+    <td align="left" valign="middle">
+      <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="780">
+    </td>
+  </tr>
+</table>
 
 <p align="center">
-  <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="98%">
+  <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="82%">
 </p>
 
 <p align="center">
