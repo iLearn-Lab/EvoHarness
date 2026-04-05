@@ -45,17 +45,17 @@
 - Python 3.11+
 - Node.js 18+（React/Ink terminal frontend）
 
-### 安装
+### 源码目录直接启动
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
 cd EvoHarness
-python -m pip install -e .
-cd frontend/terminal && npm install
-cd ../..
+python -m evo_harness
 ```
 
-### 启动
+首次 TUI 启动时，如果本机有 `npm`，前端依赖会自动安装。
+
+### 可选安装命令别名
 
 ```bash
 evoh

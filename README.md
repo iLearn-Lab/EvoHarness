@@ -3,100 +3,126 @@
 </div>
 
 <div align="center">
-
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](./pyproject.toml)
-[![Runtime](https://img.shields.io/badge/Terminal--Native-Agent_Harness-0B132B?style=for-the-badge&logo=gnometerminal&logoColor=white)](./src)
-[![Tools](https://img.shields.io/badge/Tools-26-14B8A6?style=for-the-badge)](./src/evo_harness/harness/tools.py)
-[![Commands](https://img.shields.io/badge/Commands-32-0EA5E9?style=for-the-badge)](./.claude/commands)
-[![Plugins](https://img.shields.io/badge/Plugins-7-F59E0B?style=for-the-badge)](./plugins)
-[![MCP](https://img.shields.io/badge/MCP_Servers-10-8B5CF6?style=for-the-badge)](./.evo-harness/mcp.json)
-[![License](https://img.shields.io/badge/License-Apache--2.0-FACC15?style=for-the-badge)](./LICENSE)
-
+  <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="94%">
 </div>
 
-<div align="center">
+<p align="center">
+  <strong>English</strong> | <a href="./README.zh-CN.md">ZH-CN</a>
+</p>
 
-**English | [ZH-CN](./README.zh-CN.md)**
+<p align="center">
+  Terminal-native agent harness for coding workflows and controlled self-evolution research <code>(^_^)/</code>
+</p>
 
-</div>
+<p align="center">
+  markdown-first | plugin-native | MCP-ready | session-aware | self-evolving
+</p>
 
-**EvoHarness** is a terminal-native agent harness for coding workflows and controlled self-evolution research.  
-It makes the harness itself explicit: tools, commands, skills, agents, plugins, MCP, memory, approvals, sessions, and evolution operators all stay visible, editable, and inspectable `(^_^)/`
+<p align="center">
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-Launch_Now-2563EB?style=for-the-badge" alt="Quick Start"></a>
+  <a href="#core-surfaces"><img src="https://img.shields.io/badge/Surface-Commands_+_Skills_+_Agents-0EA5E9?style=for-the-badge" alt="Surface"></a>
+  <a href="#controlled-self-evolution"><img src="https://img.shields.io/badge/Self--Evolution-Controlled-7C3AED?style=for-the-badge" alt="Self Evolution"></a>
+  <a href="#plugin-and-mcp-ecosystem"><img src="https://img.shields.io/badge/Plugins_+_MCP-Bundled-F59E0B?style=for-the-badge" alt="Plugins and MCP"></a>
+  <a href="./docs/architecture.md"><img src="https://img.shields.io/badge/Docs-Architecture-334155?style=for-the-badge" alt="Docs"></a>
+</p>
 
-One command, **`evoh`**, launches a runtime that is:
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/runtime-terminal--native-0F172A?style=flat-square" alt="Runtime">
+  <img src="https://img.shields.io/badge/license-Apache--2.0-FACC15?style=flat-square" alt="License">
+</p>
 
-- markdown-first for commands, skills, and agents
-- plugin-native for ecosystem growth
-- MCP-ready for external tools, resources, and prompts
-- serious about controlled self-evolution rather than vague "auto-improvement"
+<p align="center">
+  <img src="https://img.shields.io/badge/tools-26-14B8A6?style=flat-square" alt="Tools">
+  <img src="https://img.shields.io/badge/commands-32-0EA5E9?style=flat-square" alt="Commands">
+  <img src="https://img.shields.io/badge/skills-34-06B6D4?style=flat-square" alt="Skills">
+  <img src="https://img.shields.io/badge/agents-32-3B82F6?style=flat-square" alt="Agents">
+  <img src="https://img.shields.io/badge/plugins-7-F59E0B?style=flat-square" alt="Plugins">
+  <img src="https://img.shields.io/badge/mcp_servers-10-8B5CF6?style=flat-square" alt="MCP Servers">
+</p>
 
-This GitHub release is intentionally trimmed for publication.  
-It keeps the runtime, frontend, plugins, default ecosystem, and docs, while removing tests, examples, caches, and local noise `(._.)`
+> **EvoHarness** makes the harness itself explicit: tools, commands, skills, agents, plugins, MCP, memory, approvals, sessions, and evolution operators stay visible, editable, and inspectable.
+>
+> This GitHub release is intentionally trimmed for publication. It keeps the runtime, frontend, plugins, default ecosystem, and docs, while removing tests, examples, caches, and local noise `(._.)`
 
 ---
 
-## Why EvoHarness `\(^o^)/`
+## Why EvoHarness
 
 <table>
   <tr>
-    <td width="20%" valign="top">
+    <td width="33%" valign="top">
       <strong>Terminal Runtime</strong><br><br>
       - interactive CLI / TUI<br>
       - slash-command workflow control<br>
       - tool execution, streaming, and approvals
     </td>
-    <td width="20%" valign="top">
-      <strong>Markdown Surfaces</strong><br><br>
+    <td width="33%" valign="top">
+      <strong>Markdown Workflow Surface</strong><br><br>
       - 32 commands<br>
       - 34 skills<br>
       - 32 agents<br>
       - repo-native workflow packaging
     </td>
-    <td width="20%" valign="top">
+    <td width="33%" valign="top">
       <strong>Plugin + MCP</strong><br><br>
       - 7 bundled plugins<br>
       - 10 MCP servers<br>
       - tools / resources / prompts<br>
       - marketplace-ready layout
     </td>
-    <td width="20%" valign="top">
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
       <strong>Governance</strong><br><br>
       - approvals and permission modes<br>
       - hooks and policy surfaces<br>
       - session archives and task control
     </td>
-    <td width="20%" valign="top">
+    <td width="33%" valign="top">
       <strong>Self-Evolution</strong><br><br>
       - trace-to-plan bridge<br>
       - revise command / skill / memory<br>
       - candidate, promote, rollback<br>
       - ecosystem growth operators
     </td>
+    <td width="33%" valign="top">
+      <strong>Public Release Shape</strong><br><br>
+      - source, frontend, plugins, docs<br>
+      - public CLAUDE surface<br>
+      - bundled marketplace and MCP registry<br>
+      - clean GitHub-ready repository layout
+    </td>
   </tr>
 </table>
 
 ---
 
-## Quick Start `(^_^)/`
+## Quick Start
 
 ### Requirements
 
 - Python 3.11+
-- Node.js 18+ for the React/Ink terminal frontend
+- Node.js 18+ if you want the React/Ink terminal frontend
 
-### Install
+### Fastest Source Launch
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
 cd EvoHarness
-python -m pip install -e .
-cd frontend/terminal && npm install
-cd ../..
+python -m evo_harness
 ```
 
-### Launch
+`python -m evo_harness` is the simplest entrypoint from a source checkout `(^_^)/`
+
+If `npm` is available, the frontend dependencies are installed automatically on the first TUI launch.
+
+### Optional Editable Install
+
+If you want the shorter CLI alias:
 
 ```bash
+python -m pip install -e .
 evoh
 ```
 
@@ -124,7 +150,7 @@ evoh mcp-list --workspace . --kind all
 
 ---
 
-## Core Surfaces `(>_<)`
+## Core Surfaces
 
 Current release surface:
 
@@ -140,7 +166,7 @@ That means `.claude/`, `plugins/`, and `.evo-harness/mcp.json` are part of the p
 
 ---
 
-## Controlled Self-Evolution `(-_-)`
+## Controlled Self-Evolution
 
 EvoHarness treats self-evolution as a **controlled systems problem** rather than an aesthetic slogan.
 
@@ -176,7 +202,7 @@ Research-wise, the emphasis is on:
 
 ---
 
-## Repository Layout `(^_^)`
+## Repository Layout
 
 ```text
 EvoHarness/
@@ -199,7 +225,7 @@ Trimmed from this GitHub-ready release:
 
 ---
 
-## Plugin and MCP Ecosystem `\(^o^)/`
+## Plugin and MCP Ecosystem
 
 Bundled plugins:
 
@@ -265,4 +291,3 @@ A machine-readable citation file is also provided in [CITATION.cff](./CITATION.c
 ## License
 
 Apache-2.0. See [LICENSE](./LICENSE).
-

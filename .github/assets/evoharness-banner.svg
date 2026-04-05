@@ -1,51 +1,57 @@
-<svg width="1600" height="420" viewBox="0 0 1600 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1600" height="360" viewBox="0 0 1600 360" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="420" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#08101D"/>
-      <stop offset="0.55" stop-color="#0B1830"/>
-      <stop offset="1" stop-color="#101E3A"/>
+    <linearGradient id="title" x1="292" y1="82" x2="1270" y2="188" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="0.55" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#334155"/>
     </linearGradient>
-    <linearGradient id="accent" x1="120" y1="92" x2="412" y2="300" gradientUnits="userSpaceOnUse">
+    <linearGradient id="panel" x1="78" y1="86" x2="280" y2="242" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#18233D"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="92" y1="104" x2="280" y2="242" gradientUnits="userSpaceOnUse">
       <stop stop-color="#5EEAD4"/>
       <stop offset="1" stop-color="#38BDF8"/>
     </linearGradient>
-    <linearGradient id="title" x1="520" y1="90" x2="1410" y2="280" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#5EEAD4"/>
-      <stop offset="0.45" stop-color="#60A5FA"/>
-      <stop offset="1" stop-color="#E2E8F0"/>
-    </linearGradient>
-    <filter id="glow" x="0" y="0" width="1600" height="420" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feGaussianBlur stdDeviation="18" result="blur"/>
-      <feBlend in="SourceGraphic" in2="blur" mode="screen"/>
+    <filter id="shadow" x="0" y="0" width="1600" height="360" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dy="10"/>
+      <feGaussianBlur stdDeviation="16"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.113725 0 0 0 0 0.156863 0 0 0 0 0.239216 0 0 0 0.18 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"/>
     </filter>
   </defs>
 
-  <rect width="1600" height="420" rx="28" fill="url(#bg)"/>
-  <g opacity="0.22">
-    <circle cx="118" cy="88" r="6" fill="#5EEAD4"/>
-    <circle cx="167" cy="58" r="6" fill="#5EEAD4"/>
-    <circle cx="222" cy="95" r="6" fill="#5EEAD4"/>
-    <circle cx="281" cy="63" r="6" fill="#5EEAD4"/>
-    <circle cx="332" cy="108" r="6" fill="#5EEAD4"/>
-    <circle cx="246" cy="149" r="6" fill="#5EEAD4"/>
-    <path d="M118 88L167 58L222 95L281 63L332 108L246 149L167 58" stroke="#67E8F9" stroke-width="2"/>
-    <path d="M96 136H324M85 196H350M70 256H372" stroke="#38BDF8" stroke-width="2"/>
+  <g filter="url(#shadow)">
+    <rect x="18" y="18" width="1564" height="324" rx="28" fill="#F8FBFF"/>
+    <rect x="18.75" y="18.75" width="1562.5" height="322.5" rx="27.25" stroke="#D9E4F3" stroke-width="1.5"/>
   </g>
 
-  <g filter="url(#glow)">
-    <rect x="74" y="102" width="330" height="220" rx="18" fill="#0A1324" stroke="url(#accent)" stroke-width="3"/>
-    <rect x="74" y="102" width="330" height="34" rx="18" fill="#0E1A2F"/>
-    <circle cx="104" cy="119" r="5" fill="#F97316"/>
-    <circle cx="124" cy="119" r="5" fill="#FACC15"/>
-    <circle cx="144" cy="119" r="5" fill="#4ADE80"/>
-    <text x="104" y="176" fill="#67E8F9" font-size="50" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO</text>
-    <text x="104" y="226" fill="#38BDF8" font-size="50" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">HARNESS</text>
-    <text x="104" y="270" fill="#CBD5E1" font-size="20" font-family="Consolas, Menlo, Monaco, monospace">terminal-native  •  markdown-first</text>
-    <text x="104" y="300" fill="#94A3B8" font-size="20" font-family="Consolas, Menlo, Monaco, monospace">self-evolving  (^_^)/</text>
+  <g opacity="0.9">
+    <circle cx="86" cy="74" r="10" fill="#67E8F9"/>
+    <circle cx="126" cy="46" r="10" fill="#67E8F9"/>
+    <circle cx="168" cy="74" r="10" fill="#67E8F9"/>
+    <circle cx="208" cy="46" r="10" fill="#67E8F9"/>
+    <circle cx="248" cy="74" r="10" fill="#67E8F9"/>
+    <circle cx="124" cy="102" r="10" fill="#67E8F9"/>
+    <circle cx="206" cy="102" r="10" fill="#67E8F9"/>
+    <path d="M86 74L126 46L168 74L208 46L248 74L206 102L168 74L124 102L86 74Z" stroke="#38BDF8" stroke-width="3"/>
   </g>
 
-  <text x="478" y="192" fill="url(#title)" font-size="112" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="800">EvoHarness</text>
-  <text x="486" y="246" fill="#D7E4F5" font-size="30" font-family="Segoe UI, Inter, Arial, sans-serif">Terminal-Native Agent Harness for Coding Workflows and Controlled Self-Evolution</text>
-  <text x="486" y="295" fill="#7DD3FC" font-size="24" font-family="Segoe UI, Inter, Arial, sans-serif">commands  •  skills  •  agents  •  plugins  •  MCP  •  approvals  •  sessions  •  evolution</text>
-  <text x="486" y="340" fill="#93C5FD" font-size="22" font-family="Segoe UI, Inter, Arial, sans-serif">make the harness feel alive, not just available  \(^o^)/</text>
+  <g>
+    <rect x="82" y="92" width="252" height="168" rx="18" fill="url(#panel)" stroke="url(#accent)" stroke-width="3"/>
+    <rect x="82" y="92" width="252" height="32" rx="18" fill="#20283B"/>
+    <circle cx="110" cy="108" r="5" fill="#FB7185"/>
+    <circle cx="130" cy="108" r="5" fill="#FBBF24"/>
+    <circle cx="150" cy="108" r="5" fill="#4ADE80"/>
+    <text x="105" y="168" fill="#5EEAD4" font-size="24" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO</text>
+    <text x="105" y="206" fill="#38BDF8" font-size="24" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">HARNESS</text>
+    <text x="105" y="228" fill="#CBD5E1" font-size="13" font-family="Consolas, Menlo, Monaco, monospace">terminal-native  -  markdown-first</text>
+    <text x="105" y="248" fill="#94A3B8" font-size="13" font-family="Consolas, Menlo, Monaco, monospace">self-evolving  (^_^)/</text>
+  </g>
+
+  <text x="374" y="154" fill="url(#title)" font-size="118" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="800">EvoHarness</text>
+  <text x="382" y="210" fill="#0F172A" font-size="28" font-family="Segoe UI, Inter, Arial, sans-serif">Terminal-Native Agent Harness</text>
+  <text x="382" y="252" fill="#2563EB" font-size="22" font-family="Segoe UI, Inter, Arial, sans-serif">Coding workflows  -  plugins  -  MCP  -  approvals  -  controlled self-evolution</text>
+  <text x="382" y="292" fill="#60A5FA" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">make the harness feel alive, not just available  \(^o^)/</text>
 </svg>
