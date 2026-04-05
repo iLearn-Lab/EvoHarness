@@ -74,11 +74,11 @@ So the loop can be read in one line:
 In short, EvoHarness studies self-evolution as a **long-horizon operator-control problem** over commands, skills, agents, plugins, MCP, memory, and policy surfaces.
 
 <p align="center">
-  <img src="./.github/assets/evoharness-pony-evolution-duo.png" alt="EvoHarness pony evolution duo" width="88%">
+  <img src="./.github/assets/evoharness-mascot-evolution-lineup.png" alt="EvoHarness mascot evolution lineup" width="96%">
 </p>
 
 <p align="center">
-  <strong>🐴 From saddle pony to evolution pony, still cute all the way ✨🩵</strong>
+  <strong>🐴 Three-stage mascot evolution: saddle -> harness -> elegant evolution ✨🩵</strong>
 </p>
 
 ---
