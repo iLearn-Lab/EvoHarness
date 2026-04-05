@@ -66,26 +66,26 @@ From a research standpoint, EvoHarness is useful because it exposes **where** im
   <img src="./.github/assets/evoharness-architecture.svg" alt="EvoHarness architecture overview" width="100%">
 </div>
 
-EvoHarness exposes the harness as a visible engineering surface, not a hidden runtime shell.
+EvoHarness makes the harness observable, countable, and evolvable.
 
-Core surface at a glance:
+At the system surface, it exposes:
 
 - 🛠️ **26 tools** for files, shell, search, tasks, registry, MCP, and subagents
-- 🧾 **32 commands** for repeatable workflow entry points
-- 🧠 **34 skills** for on-demand procedural guidance
-- 🤖 **32 agents** for bounded delegation and inspection
+- 🧾 **32 commands** as workflow entry points
+- 🧠 **34 skills** as on-demand procedural guidance
+- 🤖 **32 agents** for bounded delegation
 - 🔌 **7 plugins** for workspace-native ecosystem growth
 - 🛰️ **10 MCP servers / 29 MCP tools** for external tools, resources, and prompts
 
 Architecturally, the runtime ties together:
 
-- terminal-native control with slash commands and session state
-- markdown workflow surfaces in `.claude/`
-- plugin-native bundles in `plugins/`
-- MCP-native tools, resources, and prompts
-- long-horizon memory, analytics, approvals, and evolution planning
+- terminal-native control
+- markdown-native workflow packaging
+- plugin-native extensibility
+- MCP-native ecosystem access
+- memory, approvals, analytics, and evolution planning in the same runtime
 
-The design point is explicit: the harness itself is the system under study.
+In short: the harness is not background glue, it is the primary engineered surface `(^_^)`
 
 ---
 
