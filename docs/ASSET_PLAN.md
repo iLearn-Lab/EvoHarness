@@ -23,6 +23,27 @@ If you replace the left-side image, the easiest path is:
 
 ## Final Asset Checklist
 
+## What To Generate Next
+
+If you only want the most useful next images, generate these first:
+
+1. `.github/assets/evoharness-harness-signature.png`
+   - purpose: one image that shows the harness identity and the core counts
+   - ratio: `16:9`
+   - size: `1792x1024`
+
+2. `.github/assets/evoharness-evo-pony.png`
+   - purpose: cute side mascot for the self-evolution section
+   - ratio: `1:1`
+   - size: `1024x1024`
+
+3. `.github/assets/evoharness-benchmark.png`
+   - purpose: academic evidence figure for results / comparison
+   - ratio: `4:3`
+   - size: `1600x1200`
+
+If you want just one new image for the harness section, generate `evoharness-harness-signature.png`.
+
 ### A. Best Provided By You
 
 These are better as **real screenshots / real figures**.
@@ -185,6 +206,14 @@ Best ratio: `16:9`
 A polished technical infographic for an AI systems project called EvoHarness, showing five feature pillars: agent loop, harness toolkit, context and memory, governance, ecosystem, clean academic infographic design, card-based layout, blue cyan violet orange accents, readable and structured, suitable for an open-source README
 ```
 
+### D2. Harness Signature Figure
+
+Best ratio: `16:9`
+
+```text
+A polished research-grade product graphic for a project called EvoHarness, showing the harness as the primary system surface, include elegant visual emphasis for 26 tools, 32 commands, 34 skills, 32 agents, 7 plugins, and 10 MCP servers, blue and cyan engineering palette, crisp typography, clean systems design, serious but attractive, suitable for a GitHub README
+```
+
 ### E. Self-Evolution Pipeline
 
 Best ratio: `16:9`
@@ -198,7 +227,7 @@ A serious technical diagram showing controlled self-evolution for an agent harne
 Best ratio: `1:1`
 
 ```text
-A cute cyber pony mascot for a project called EvoHarness, small research saddle and harness gear, blue-cyan palette, terminal-native systems vibe, glowing circuit details, friendly and adorable but still polished, soft academic sci-fi style, transparent background, high quality mascot illustration, not childish, not messy
+A cute cyber pony mascot for a project called EvoHarness, a small pony with a tiny saddle and harness gear, evolving from an ordinary saddle pony into a glowing upgraded evolution pony, blue-cyan palette, terminal-native systems vibe, subtle circuit details, friendly and adorable, polished soft sci-fi style, transparent background, high quality mascot illustration, not messy, not scary
 ```
 
 ### F. Harness Architecture Figure
