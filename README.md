@@ -87,11 +87,11 @@ In short, EvoHarness studies self-evolution as a **long-horizon operator-control
 ## 🧩🛠️ Harness Architecture \(^_^)/ 
 
 <div align="center">
-  <img src="./.github/assets/evoharness-architecture.svg" alt="EvoHarness architecture overview" width="100%">
+  <img src="./.github/assets/evoharness-architecture-main.png" alt="EvoHarness architecture main view" width="100%">
 </div>
 
 <p align="center">
-  <strong>👀 Visible surfaces • 🧱 Workspace-native control • 🛰️ Plugin + MCP ecosystem • 🧠 Long-horizon state</strong>
+  <strong>🧩 One runtime core • 👀 visible harness surfaces • 🧠 one long-horizon state layer</strong>
 </p>
 
 EvoHarness is built around one architectural bet: the harness should be a **first-class system surface**, not hidden orchestration glue.
@@ -111,6 +111,14 @@ At the system surface, EvoHarness exposes:
 - 🤖 **32 agents** for bounded delegation
 - 🔌 **7 plugins** for workspace-native ecosystem growth
 - 🛰️ **10 MCP servers / 29 MCP tools** for external tools, resources, and prompts
+
+<p align="center">
+  <img src="./.github/assets/evoharness-architecture-pony-guide.png" alt="EvoHarness pony guide to visible surfaces" width="88%">
+</p>
+
+<p align="center">
+  <strong>🦄 A guided peek: tools, commands, skills, agents, plugins, and MCP all meet at the runtime core ✨</strong>
+</p>
 
 If you want to understand the project quickly, start here:
 
