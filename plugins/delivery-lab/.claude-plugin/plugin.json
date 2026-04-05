@@ -1,0 +1,11 @@
+{
+  "name": "delivery-lab",
+  "version": "0.1.0",
+  "description": "Adds release-readiness, regression, and session-recap workflows plus a quality-gate MCP bundle.",
+  "enabled_by_default": true,
+  "author": {
+    "name": "Evo Harness"
+  },
+  "tags": ["release", "regression", "sessions", "mcp"]
+}
+

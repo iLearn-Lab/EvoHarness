@@ -1,0 +1,8 @@
+{
+  "name": "safe-inspector",
+  "version": "0.1.0",
+  "description": "Adds safe inspection commands, skills, and an agent for cautious review flows.",
+  "author": {
+    "name": "Evo Harness"
+  }
+}

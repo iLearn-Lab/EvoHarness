@@ -1,0 +1,49 @@
+{
+  "name": "repo-marketplace",
+  "version": "1.0.0",
+  "description": "Installable plugin bundles shipped with this Evo Harness workspace.",
+  "plugins": [
+    {
+      "name": "safe-inspector",
+      "description": "Safe inspection commands, skill guidance, and reviewer agent.",
+      "source": "../plugins/safe-inspector",
+      "category": "safety"
+    },
+    {
+      "name": "evolution-studio",
+      "description": "Ecosystem growth, trace planning, and MCP-first audit workflows.",
+      "source": "../plugins/evolution-studio",
+      "category": "evolution"
+    },
+    {
+      "name": "web-research",
+      "description": "Public-web research command, skill, agent, and MCP bundle.",
+      "source": "../plugins/web-research",
+      "category": "research"
+    },
+    {
+      "name": "workspace-ops",
+      "description": "Workspace mapping, registry hygiene, and plugin packaging workflows.",
+      "source": "../plugins/workspace-ops",
+      "category": "workspace"
+    },
+    {
+      "name": "delivery-lab",
+      "description": "Release-readiness, regression, and session recap workflows.",
+      "source": "../plugins/delivery-lab",
+      "category": "delivery"
+    },
+    {
+      "name": "docs-foundry",
+      "description": "Documentation mapping, repair, and onboarding polish workflows.",
+      "source": "../plugins/docs-foundry",
+      "category": "docs"
+    },
+    {
+      "name": "session-lab",
+      "description": "Session forensics, approval flow review, and task board workflows.",
+      "source": "../plugins/session-lab",
+      "category": "operations"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "web-research": {
+      "transport": "stdio",
+      "command": "python",
+      "args": ["-m", "evo_harness.web_research_mcp_server"],
+      "description": "Public web search and fetch helpers.",
+      "tools": [
+        {
+          "name": "search_web",
+          "description": "Search the public web and return compact top results."
+        },
+        {
+          "name": "fetch_page",
+          "description": "Fetch one web page and return compact readable text."
+        }
+      ],
+      "resources": [],
+      "prompts": [
+        {
+          "name": "web_research_brief",
+          "description": "Turn a topic into a focused web-research plan."
+        }
+      ]
+    }
+  }
+}

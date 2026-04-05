@@ -1,0 +1,7 @@
+{
+  "event": "PreToolUse",
+  "description": "Tag bash as a high-attention tool in the demo safety plugin.",
+  "matcher": "bash",
+  "type": "prompt",
+  "message": "High-attention tool: {tool_name}"
+}

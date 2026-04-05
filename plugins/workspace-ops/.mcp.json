@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "workspace-intel": {
+      "transport": "stdio",
+      "command": "python",
+      "args": ["-m", "evo_harness.workspace_intel_mcp_server"],
+      "description": "Workspace mapping and surface search helpers for plugin-driven audits.",
+      "tools": [
+        {
+          "name": "workspace_snapshot",
+          "description": "Return workspace counts and optional discovered names."
+        },
+        {
+          "name": "search_surface",
+          "description": "Search commands, skills, agents, plugins, and MCP servers."
+        },
+        {
+          "name": "recent_sessions",
+          "description": "Return recent archived session summaries."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "workspace://summary",
+          "name": "Workspace Summary",
+          "description": "Counts for the current workspace surface."
+        },
+        {
+          "uri": "workspace://surface",
+          "name": "Workspace Surface",
+          "description": "Counts plus discovered names across the ecosystem."
+        },
+        {
+          "uri": "workspace://sessions",
+          "name": "Recent Sessions",
+          "description": "Recent archived session summaries."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "plan_ecosystem_upgrade",
+          "description": "Turn current workspace counts and a stated gap into a concrete upgrade plan."
+        }
+      ]
+    }
+  }
+}
+

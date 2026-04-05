@@ -1,0 +1,52 @@
+{
+  "mcpServers": {
+    "session-lab": {
+      "transport": "stdio",
+      "command": "python",
+      "args": ["-m", "evo_harness.session_lab_mcp_server"],
+      "description": "Session, approval, and background-task inspection helpers.",
+      "tools": [
+        {
+          "name": "recent_sessions",
+          "description": "Return recent archived session summaries."
+        },
+        {
+          "name": "pending_approvals",
+          "description": "Return pending approval requests for the workspace."
+        },
+        {
+          "name": "task_board",
+          "description": "Return current background task records for the workspace."
+        },
+        {
+          "name": "session_metrics",
+          "description": "Return session analytics totals and recent summaries."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "sessions://recent",
+          "name": "Recent Sessions",
+          "description": "Recent archived session summaries."
+        },
+        {
+          "uri": "sessions://approvals",
+          "name": "Pending Approvals",
+          "description": "Pending approval requests for the workspace."
+        },
+        {
+          "uri": "sessions://tasks",
+          "name": "Task Board",
+          "description": "Current task records for the workspace."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "stability_followup",
+          "description": "Turn recent session evidence into a focused follow-up brief."
+        }
+      ]
+    }
+  }
+}
+

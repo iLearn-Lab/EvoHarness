@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "docs-gap": {
+      "transport": "stdio",
+      "command": "python",
+      "args": ["-m", "evo_harness.docs_gap_mcp_server"],
+      "description": "Workspace-wide documentation catalog, search, and repair-brief helpers.",
+      "tools": [
+        {
+          "name": "catalog_docs",
+          "description": "List visible markdown docs in the current workspace."
+        },
+        {
+          "name": "search_doc_text",
+          "description": "Search markdown docs by text content."
+        },
+        {
+          "name": "read_doc_excerpt",
+          "description": "Read a compact excerpt from one workspace document."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "docs://catalog",
+          "name": "Docs Catalog",
+          "description": "Catalog of visible markdown docs in the workspace."
+        },
+        {
+          "uri": "docs://readme",
+          "name": "README Excerpt",
+          "description": "Compact excerpt from README.md."
+        },
+        {
+          "uri": "docs://claude",
+          "name": "CLAUDE Excerpt",
+          "description": "Compact excerpt from CLAUDE.md."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "documentation_repair_brief",
+          "description": "Turn a documentation gap into a focused repair brief."
+        }
+      ]
+    }
+  }
+}
+

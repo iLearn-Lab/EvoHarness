@@ -1,0 +1,51 @@
+<svg width="1600" height="420" viewBox="0 0 1600 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08101D"/>
+      <stop offset="0.55" stop-color="#0B1830"/>
+      <stop offset="1" stop-color="#101E3A"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="120" y1="92" x2="412" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EEAD4"/>
+      <stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+    <linearGradient id="title" x1="520" y1="90" x2="1410" y2="280" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EEAD4"/>
+      <stop offset="0.45" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <filter id="glow" x="0" y="0" width="1600" height="420" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feBlend in="SourceGraphic" in2="blur" mode="screen"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="420" rx="28" fill="url(#bg)"/>
+  <g opacity="0.22">
+    <circle cx="118" cy="88" r="6" fill="#5EEAD4"/>
+    <circle cx="167" cy="58" r="6" fill="#5EEAD4"/>
+    <circle cx="222" cy="95" r="6" fill="#5EEAD4"/>
+    <circle cx="281" cy="63" r="6" fill="#5EEAD4"/>
+    <circle cx="332" cy="108" r="6" fill="#5EEAD4"/>
+    <circle cx="246" cy="149" r="6" fill="#5EEAD4"/>
+    <path d="M118 88L167 58L222 95L281 63L332 108L246 149L167 58" stroke="#67E8F9" stroke-width="2"/>
+    <path d="M96 136H324M85 196H350M70 256H372" stroke="#38BDF8" stroke-width="2"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <rect x="74" y="102" width="330" height="220" rx="18" fill="#0A1324" stroke="url(#accent)" stroke-width="3"/>
+    <rect x="74" y="102" width="330" height="34" rx="18" fill="#0E1A2F"/>
+    <circle cx="104" cy="119" r="5" fill="#F97316"/>
+    <circle cx="124" cy="119" r="5" fill="#FACC15"/>
+    <circle cx="144" cy="119" r="5" fill="#4ADE80"/>
+    <text x="104" y="176" fill="#67E8F9" font-size="50" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO</text>
+    <text x="104" y="226" fill="#38BDF8" font-size="50" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">HARNESS</text>
+    <text x="104" y="270" fill="#CBD5E1" font-size="20" font-family="Consolas, Menlo, Monaco, monospace">terminal-native  •  markdown-first</text>
+    <text x="104" y="300" fill="#94A3B8" font-size="20" font-family="Consolas, Menlo, Monaco, monospace">self-evolving  (^_^)/</text>
+  </g>
+
+  <text x="478" y="192" fill="url(#title)" font-size="112" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="800">EvoHarness</text>
+  <text x="486" y="246" fill="#D7E4F5" font-size="30" font-family="Segoe UI, Inter, Arial, sans-serif">Terminal-Native Agent Harness for Coding Workflows and Controlled Self-Evolution</text>
+  <text x="486" y="295" fill="#7DD3FC" font-size="24" font-family="Segoe UI, Inter, Arial, sans-serif">commands  •  skills  •  agents  •  plugins  •  MCP  •  approvals  •  sessions  •  evolution</text>
+  <text x="486" y="340" fill="#93C5FD" font-size="22" font-family="Segoe UI, Inter, Arial, sans-serif">make the harness feel alive, not just available  \(^o^)/</text>
+</svg>

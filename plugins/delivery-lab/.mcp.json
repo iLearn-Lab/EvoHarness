@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "quality-gate": {
+      "transport": "stdio",
+      "command": "python",
+      "args": ["-m", "evo_harness.quality_gate_mcp_server"],
+      "description": "Doctor, promotion, and session analytics helpers for release-readiness work.",
+      "tools": [
+        {
+          "name": "doctor_report",
+          "description": "Return the doctor report including ecosystem health checks."
+        },
+        {
+          "name": "promotion_summary",
+          "description": "Return promotion totals and analytics."
+        },
+        {
+          "name": "session_summary",
+          "description": "Return session analytics for the current workspace."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "ops://doctor",
+          "name": "Doctor Report",
+          "description": "Doctor report with ecosystem health findings."
+        },
+        {
+          "uri": "ops://promotions",
+          "name": "Promotion Summary",
+          "description": "Promotion totals and analytics."
+        },
+        {
+          "uri": "ops://sessions",
+          "name": "Session Summary",
+          "description": "Session analytics report."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "release_readiness_brief",
+          "description": "Generate a compact release-readiness review brief."
+        }
+      ]
+    }
+  }
+}
+

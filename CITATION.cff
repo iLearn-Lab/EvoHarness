@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: EvoHarness
+message: "If you use EvoHarness, please cite the software entry below."
+type: software
+authors:
+  - family-names: EvoHarness
+    given-names: Contributors
+repository-code: https://github.com/HITSZ-DS/EvoHarness
+url: https://github.com/HITSZ-DS/EvoHarness
+license: Apache-2.0
+version: 0.1.0
+date-released: 2026-04-05
+abstract: >
+  EvoHarness is a terminal-native agent harness for coding workflows and
+  controlled self-evolution research.
+

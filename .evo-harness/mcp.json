@@ -1,0 +1,230 @@
+{
+  "mcpServers": {
+    "workspace-docs": {
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-m",
+        "evo_harness.workspace_docs_mcp_server"
+      ],
+      "description": "Local documentation MCP server for this Evo Harness workspace.",
+      "tools": [
+        {
+          "name": "search_docs",
+          "description": "Search key local docs such as README, CLAUDE, and feature matrix files."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "docs://readme",
+          "name": "README",
+          "description": "Repository overview and usage notes."
+        },
+        {
+          "uri": "docs://claude",
+          "name": "CLAUDE",
+          "description": "Root workspace instructions and project guidance."
+        },
+        {
+          "uri": "docs://feature-matrix-zh",
+          "name": "Feature Matrix (zh-CN)",
+          "description": "Chinese feature matrix for harness capabilities."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "triage_workspace_gap",
+          "description": "Turn a workspace capability gap into a concrete debugging plan."
+        }
+      ]
+    },
+    "workspace-intel": {
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-m",
+        "evo_harness.workspace_intel_mcp_server"
+      ],
+      "description": "Live workspace surface and session inspection helpers.",
+      "tools": [
+        {
+          "name": "workspace_snapshot",
+          "description": "Return workspace counts and optional discovered names."
+        },
+        {
+          "name": "search_surface",
+          "description": "Search commands, skills, agents, plugins, and MCP servers."
+        },
+        {
+          "name": "recent_sessions",
+          "description": "Return recent archived session summaries."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "workspace://summary",
+          "name": "Workspace Summary",
+          "description": "Counts for the current workspace surface."
+        },
+        {
+          "uri": "workspace://surface",
+          "name": "Workspace Surface",
+          "description": "Counts plus discovered names across the ecosystem."
+        },
+        {
+          "uri": "workspace://sessions",
+          "name": "Recent Sessions",
+          "description": "Recent archived session summaries."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "plan_ecosystem_upgrade",
+          "description": "Turn current workspace counts and a stated gap into a concrete upgrade plan."
+        }
+      ]
+    },
+    "quality-gate": {
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-m",
+        "evo_harness.quality_gate_mcp_server"
+      ],
+      "description": "Doctor, promotion, and session analytics helpers for release readiness.",
+      "tools": [
+        {
+          "name": "doctor_report",
+          "description": "Return the doctor report including ecosystem health checks."
+        },
+        {
+          "name": "promotion_summary",
+          "description": "Return promotion totals and analytics."
+        },
+        {
+          "name": "session_summary",
+          "description": "Return session analytics for the current workspace."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "ops://doctor",
+          "name": "Doctor Report",
+          "description": "Doctor report with ecosystem health findings."
+        },
+        {
+          "uri": "ops://promotions",
+          "name": "Promotion Summary",
+          "description": "Promotion totals and analytics."
+        },
+        {
+          "uri": "ops://sessions",
+          "name": "Session Summary",
+          "description": "Session analytics report."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "release_readiness_brief",
+          "description": "Generate a compact release-readiness review brief."
+        }
+      ]
+    },
+    "docs-gap": {
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-m",
+        "evo_harness.docs_gap_mcp_server"
+      ],
+      "description": "Workspace-wide documentation catalog, search, and repair-brief helpers.",
+      "tools": [
+        {
+          "name": "catalog_docs",
+          "description": "List visible markdown docs in the current workspace."
+        },
+        {
+          "name": "search_doc_text",
+          "description": "Search markdown docs by text content."
+        },
+        {
+          "name": "read_doc_excerpt",
+          "description": "Read a compact excerpt from one workspace document."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "docs://catalog",
+          "name": "Docs Catalog",
+          "description": "Catalog of visible markdown docs in the workspace."
+        },
+        {
+          "uri": "docs://readme",
+          "name": "README Excerpt",
+          "description": "Compact excerpt from README.md."
+        },
+        {
+          "uri": "docs://claude",
+          "name": "CLAUDE Excerpt",
+          "description": "Compact excerpt from CLAUDE.md."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "documentation_repair_brief",
+          "description": "Turn a documentation gap into a focused repair brief."
+        }
+      ]
+    },
+    "session-lab": {
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-m",
+        "evo_harness.session_lab_mcp_server"
+      ],
+      "description": "Session, approval, and background-task inspection helpers.",
+      "tools": [
+        {
+          "name": "recent_sessions",
+          "description": "Return recent archived session summaries."
+        },
+        {
+          "name": "pending_approvals",
+          "description": "Return pending approval requests for the workspace."
+        },
+        {
+          "name": "task_board",
+          "description": "Return current background task records for the workspace."
+        },
+        {
+          "name": "session_metrics",
+          "description": "Return session analytics totals and recent summaries."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "sessions://recent",
+          "name": "Recent Sessions",
+          "description": "Recent archived session summaries."
+        },
+        {
+          "uri": "sessions://approvals",
+          "name": "Pending Approvals",
+          "description": "Pending approval requests for the workspace."
+        },
+        {
+          "uri": "sessions://tasks",
+          "name": "Task Board",
+          "description": "Current task records for the workspace."
+        }
+      ],
+      "prompts": [
+        {
+          "name": "stability_followup",
+          "description": "Turn recent session evidence into a focused follow-up brief."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "web-research",
+  "version": "0.1.0",
+  "description": "Adds web search commands, skills, agents, and an MCP server for public-web research flows.",
+  "enabled_by_default": true,
+  "author": {
+    "name": "Evo Harness"
+  },
+  "tags": ["web", "research", "mcp"]
+}
+

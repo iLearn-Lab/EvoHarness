@@ -1,0 +1,11 @@
+{
+  "name": "docs-foundry",
+  "version": "0.1.0",
+  "description": "Adds documentation mapping, repair, onboarding polish, and a docs-gap MCP bundle.",
+  "enabled_by_default": true,
+  "author": {
+    "name": "Evo Harness"
+  },
+  "tags": ["docs", "onboarding", "mcp"]
+}
+

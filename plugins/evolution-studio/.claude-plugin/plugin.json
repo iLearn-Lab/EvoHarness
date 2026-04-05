@@ -1,0 +1,11 @@
+{
+  "name": "evolution-studio",
+  "version": "0.1.0",
+  "description": "Adds evolution-focused commands, agents, and skills for trace triage, ecosystem growth, and validation review.",
+  "enabled_by_default": true,
+  "author": {
+    "name": "Evo Harness"
+  },
+  "tags": ["evolution", "agents", "skills", "commands"]
+}
+

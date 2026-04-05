@@ -1,0 +1,11 @@
+{
+  "name": "session-lab",
+  "version": "0.1.0",
+  "description": "Adds session forensics, approval-flow review, task-board workflows, and a session-lab MCP bundle.",
+  "enabled_by_default": true,
+  "author": {
+    "name": "Evo Harness"
+  },
+  "tags": ["sessions", "approvals", "tasks", "mcp"]
+}
+

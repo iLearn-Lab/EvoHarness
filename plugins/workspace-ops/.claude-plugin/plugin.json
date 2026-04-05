@@ -1,0 +1,11 @@
+{
+  "name": "workspace-ops",
+  "version": "0.1.0",
+  "description": "Adds workspace mapping, registry hygiene, plugin packaging, and a workspace-intel MCP bundle.",
+  "enabled_by_default": true,
+  "author": {
+    "name": "Evo Harness"
+  },
+  "tags": ["workspace", "registry", "mcp", "plugins"]
+}
+
