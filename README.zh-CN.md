@@ -163,6 +163,14 @@ evoh --workspace .
 如果本机存在 `npm`，EvoHarness 会优先尝试 React/Ink 前端。  
 如果没有，它会自动回退到文本会话。
 
+<p align="center">
+  <img src="./.github/assets/evo-cli.png" alt="EvoHarness terminal home" width="100%">
+</p>
+
+<p align="center">
+  <strong>✨ 第一眼就能看到 runtime deck、slash commands 和 live harness status</strong>
+</p>
+
 ### 3. 🛠️ 在会话里用 `/setup` 配置 Provider
 
 进入会话后，先输入：
@@ -177,6 +185,14 @@ EvoHarness 会依次问你四件事：
 - 🤖 `Model`：你实际想跑的模型名
 - 🔑 `API key`：现在直接粘贴，或者如果你已经放在别处就先留空
 - 🌐 `Base URL`：如果你用的是自定义网关或非默认地址，这里必须明确填
+
+<p align="center">
+  <img src="./.github/assets/evo-setup.png" alt="EvoHarness setup prompt" width="100%">
+</p>
+
+<p align="center">
+  <strong>🛠️ `/setup` 是把 fresh session 变成真正可用会话的最快路径</strong>
+</p>
 
 ### 🧭 Provider Profile 该怎么选？
 

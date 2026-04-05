@@ -163,6 +163,14 @@ evoh --workspace .
 If `npm` is available, EvoHarness will try the React/Ink frontend first.  
 If not, it falls back to the text session automatically.
 
+<p align="center">
+  <img src="./.github/assets/evo-cli.png" alt="EvoHarness terminal home" width="100%">
+</p>
+
+<p align="center">
+  <strong>✨ First look: runtime deck, slash commands, and live harness status in one terminal surface</strong>
+</p>
+
 ### 3. 🛠️ Configure Your Provider with `/setup`
 
 Inside the session, run:
@@ -177,6 +185,14 @@ EvoHarness will ask for four things:
 - 🤖 `Model`: the exact model name you want to use
 - 🔑 `API key`: paste it now, or leave it blank if you already keep it elsewhere
 - 🌐 `Base URL`: required for custom gateways and non-default endpoints
+
+<p align="center">
+  <img src="./.github/assets/evo-setup.png" alt="EvoHarness setup prompt" width="100%">
+</p>
+
+<p align="center">
+  <strong>🛠️ `/setup` is the fastest way to make a fresh session actually usable</strong>
+</p>
 
 ### 🧭 Which Provider Profile Should You Choose?
 
@@ -258,10 +274,6 @@ What that means in practice:
 - 🔌 plugins bundle commands, skills, agents, and MCP surfaces around one workflow family
 - 🛰️ MCP bundles expose reusable tools, resources, and prompts for docs, sessions, quality, and workspace mapping
 - 🧱 everything stays workspace-native, so users can inspect the ecosystem instead of guessing what exists
-
-<div align="center">
-  <img src="./.github/assets/evoharness-ecosystem.svg" alt="EvoHarness ecosystem overview" width="100%">
-</div>
 
 ### ✨ Bundled Plugin Families
 
