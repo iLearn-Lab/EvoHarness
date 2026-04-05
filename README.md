@@ -1,6 +1,16 @@
-<div align="center">
-  <img src="./.github/assets/evoharness-banner.svg" alt="EvoHarness" width="100%">
-</div>
+<table align="center">
+  <tr>
+    <td width="190" align="center">
+      <img src="./.github/assets/evoharness-mark.svg" alt="EvoHarness mark" width="150">
+    </td>
+    <td align="left">
+      <h1>EvoHarness</h1>
+      <p><strong>Terminal-Native Agent Harness</strong></p>
+      <p>Coding workflows | plugins | MCP | approvals | controlled self-evolution \(^o^)/</p>
+      <p>make the harness feel alive, sharp, and research-grade  (^_^)/</p>
+    </td>
+  </tr>
+</table>
 
 <div align="center">
   <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="94%">
@@ -45,7 +55,7 @@ Its core orientation is **harness research**:
 
 ---
 
-## ✨ Key Harness Features
+## ✨ Key Harness Features \(^_^)/ 
 
 <div align="center">
   <img src="./.github/assets/evoharness-features.svg" alt="EvoHarness key harness features" width="100%">
@@ -61,7 +71,7 @@ EvoHarness combines five high-leverage surfaces:
 
 ---
 
-## 🧠 Controlled Self-Evolution
+## 🧠 Controlled Self-Evolution (-_-)
 
 <div align="center">
   <img src="./.github/assets/evoharness-self-evolution.svg" alt="Controlled self-evolution pipeline" width="100%">
@@ -88,7 +98,7 @@ This design emphasizes:
 
 ---
 
-## 🧩 Harness Architecture
+## 🧩 Harness Architecture (^_^)
 
 <div align="center">
   <img src="./.github/assets/evoharness-architecture.svg" alt="EvoHarness architecture overview" width="100%">
@@ -106,7 +116,7 @@ The architectural stance is simple: the harness is not background glue, it is th
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start \(^o^)/
 
 ### Requirements
 
@@ -156,7 +166,7 @@ evoh mcp-list --workspace . --kind all
 
 ---
 
-## 🕸️ Plugin and MCP Ecosystem
+## 🕸️ Plugin and MCP Ecosystem (╭☞•́⍛•̀)╭☞
 
 Bundled plugins:
 
@@ -193,7 +203,7 @@ Current runtime surface:
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation (•‿•)
 
 - [Architecture](./docs/architecture.md)
 - [Feature Matrix (zh-CN)](./docs/feature-matrix.zh-CN.md)
@@ -203,7 +213,7 @@ Current runtime surface:
 
 ---
 
-## 📝 Citation
+## 📝 Citation (._.)
 
 If you want to cite EvoHarness as software:
 

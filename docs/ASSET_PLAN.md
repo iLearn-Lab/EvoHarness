@@ -8,13 +8,23 @@ The priorities are:
 2. emphasize **harness** and **controlled self-evolution**
 3. avoid generic AI art that says nothing about the project
 
+The README hero now uses:
+
+- `./.github/assets/evoharness-mark.svg` for the **left-side project mark**
+
+If you find a better left-side image, the easiest path is simply:
+
+1. keep the same filename
+2. replace that one asset
+3. push again
+
 ---
 
 ## Recommended Asset Set
 
 If you want the README to feel full and polished, the best set is:
 
-1. **Hero banner**
+1. **Hero mark + title block**
 2. **Real CLI screenshot**
 3. **Harness feature infographic**
 4. **Self-evolution pipeline figure**
@@ -37,7 +47,8 @@ Based on the generator sizes you showed, these are the best ratios:
 
 | Asset | Best ratio | Why |
 |------|------------|-----|
-| Hero banner | `21:9` | best for GitHub README top banner |
+| Hero mark | `1:1` | best for the left-side logo / mascot |
+| Hero background strip | `21:9` | useful if you later return to a full-width banner |
 | CLI screenshot | `16:9` | reads naturally under the hero |
 | Harness features infographic | `16:9` or `4:3` | wide enough for multiple cards |
 | Self-evolution pipeline | `16:9` | good for left-to-right process flow |
@@ -112,7 +123,15 @@ This one adds the most academic credibility.
 
 Use these when you do not already have official visuals.
 
-### A. Hero Banner
+### A. Hero Mark
+
+Best ratio: `1:1`
+
+```text
+A clean futuristic AI harness emblem for a project called EvoHarness, blue-cyan palette, systems research feel, polished vector mark, geometric node motifs, professional open-source branding, transparent background, not cartoonish, not childish, suitable for a GitHub project hero
+```
+
+### B. Hero Background Strip
 
 Best ratio: `21:9`
 
@@ -120,7 +139,7 @@ Best ratio: `21:9`
 A premium GitHub README hero banner for a project called EvoHarness, terminal-native agent harness, controlled self-evolution, blue and cyan scientific infrastructure aesthetic, subtle network geometry, elegant engineering design, serious open-source systems research tone, large clean title area, minimal but powerful, no extra words, no watermark
 ```
 
-### B. Realistic CLI Promo
+### C. Realistic CLI Promo
 
 Best ratio: `16:9`
 
@@ -128,7 +147,7 @@ Best ratio: `16:9`
 A realistic terminal UI promotional image for an open-source project called EvoHarness, dark coding terminal, futuristic but believable CLI, rich transcript area, command palette, status indicators, cyber blue and cyan accents, clean typography, serious research-engineering style, not cartoonish, no fantasy UI, suitable for GitHub README
 ```
 
-### C. Harness Features Infographic
+### D. Harness Features Infographic
 
 Best ratio: `16:9`
 
@@ -136,7 +155,7 @@ Best ratio: `16:9`
 A polished technical infographic for an AI systems project called EvoHarness, showing five feature pillars: agent loop, harness toolkit, context and memory, governance, ecosystem, clean academic infographic design, card-based layout, blue cyan violet orange accents, readable and structured, suitable for an open-source README
 ```
 
-### D. Self-Evolution Pipeline
+### E. Self-Evolution Pipeline
 
 Best ratio: `16:9`
 
@@ -144,7 +163,7 @@ Best ratio: `16:9`
 A serious technical diagram showing controlled self-evolution for an agent harness: archived sessions and traces, analysis, bounded operator proposal, candidate patch generation, validation gate, promotion, hold, rollback, dark systems-research style, elegant academic visualization, blue cyan violet highlights, no decorative clutter
 ```
 
-### E. Harness Architecture Figure
+### F. Harness Architecture Figure
 
 Best ratio: `16:9`
 
@@ -152,7 +171,7 @@ Best ratio: `16:9`
 A clean systems architecture illustration for a project called EvoHarness, showing user interaction, runtime, tools, markdown workflow surfaces, plugins, MCP, memory, approvals, session archive, analytics, and evolution planning, modern academic engineering style, readable, high signal, suitable for a GitHub README
 ```
 
-### F. Ecosystem Overview Figure
+### G. Ecosystem Overview Figure
 
 Best ratio: `16:9`
 
@@ -160,7 +179,7 @@ Best ratio: `16:9`
 A structured infographic showing the ecosystem of a terminal-native agent harness project: plugins, commands, skills, agents, MCP servers, runtime state, and evolution control, clean white or light research-card layout, strong typography, blue and orange accents, systems and platform engineering aesthetic
 ```
 
-### G. Mascot / Logo
+### H. Mascot / Logo
 
 Best ratio: `1:1`
 
@@ -168,7 +187,7 @@ Best ratio: `1:1`
 A clean futuristic AI harness mascot, blue-cyan palette, academic engineering tone, terminal-native feel, subtle circuit motifs, polished open-source branding, transparent background, not chibi, not cartoonish, not childish, professional and memorable
 ```
 
-### H. Benchmark Figure Background
+### I. Benchmark Figure Background
 
 Best ratio: `4:3`
 
@@ -182,7 +201,7 @@ A serious scientific presentation background for benchmark and ablation charts, 
 
 If you want to generate only a few images first:
 
-1. `21:9` hero banner
+1. `1:1` hero mark
 2. `16:9` realistic CLI promo
 3. `16:9` self-evolution pipeline
 4. `16:9` harness architecture
