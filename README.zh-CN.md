@@ -245,36 +245,75 @@ evoh provider-detect --workspace .
 ---
 
 <a id="plugin-mcp-ecosystem"></a>
-## 🕸️ Plugin 与 MCP 生态
+## 🕸️🔌 Plugin 与 MCP 生态 \(^o^)/
 
-Bundled plugins:
+<p align="center">
+  <strong>🔧 可安装 workflow bundle • 🛰️ MCP-native utilities • 🧩 一个保持可见的 workspace 生态</strong>
+</p>
 
-- `safe-inspector`
-- `evolution-studio`
-- `web-research`
-- `workspace-ops`
-- `delivery-lab`
-- `docs-foundry`
-- `session-lab`
+在 EvoHarness 里，plugins 和 MCP 不是附属挂件，而是产品表面的一部分。
 
-Bundled MCP surfaces 覆盖：
+可以直接这样理解：
 
-- docs search 与 repair
-- workspace surface inspection
-- release-readiness review
-- session 与 approval forensics
-- public-web research
-- plugin 与 workflow design
+- 🔌 plugin 会把 commands、skills、agents、MCP surface 围绕一个工作流主题打包起来
+- 🛰️ MCP bundle 会把 docs、sessions、quality、workspace mapping 这些能力外化成 tools / resources / prompts
+- 🧱 一切都保持 workspace-native，所以用户可以直接看见生态，而不是靠猜
 
-当前 runtime surface：
+### ✨ 内置 Plugin 家族
 
-- **26 builtin tools**
-- **32 commands**
-- **34 skills**
-- **32 agents**
-- **7 plugins**
-- **10 MCP servers**
-- **29 MCP tools / 27 MCP resources / 10 MCP prompts**
+| Plugin | 关注点 | 它带来了什么 |
+| --- | --- | --- |
+| `safe-inspector` | 安全只读检查 | 谨慎检查 command、skill 和 reviewer agent |
+| `evolution-studio` | trace triage + ecosystem growth | 进化命令、规划 skills、进化导向 agents |
+| `web-research` | 公网研究 | research command、web skill、scout agent、搜索/抓取 MCP |
+| `workspace-ops` | workspace mapping + registry hygiene | topology commands、packaging skills、workspace-intel MCP |
+| `delivery-lab` | release readiness + regression review | ship-readiness workflows 与 quality-gate MCP |
+| `docs-foundry` | docs repair + onboarding polish | README/docs workflows 与 docs-gap MCP |
+| `session-lab` | sessions + approvals + tasks | task-board / forensics workflows 与 session-lab MCP |
+
+### 🛰️ 核心 MCP 表面
+
+| MCP Surface | 暴露了什么 | 最适合哪里 |
+| --- | --- | --- |
+| `workspace-docs` / `docs-gap` | 文档搜索、摘录、repair prompts | onboarding、README 漂移、docs lookup |
+| `workspace-intel` | workspace snapshot + surface search | 看懂当前 live harness layout |
+| `quality-gate` | doctor report、promotions、session summary | release readiness 与 regression review |
+| `session-lab` | recent sessions、approvals、task board | 长程 workflow forensics |
+| `web-research:web-research` | `search_web` + `fetch_page` | 不离开 harness 的公网研究 |
+
+### 📡 当前生态表面
+
+| 表面 | 数量 | 为什么重要 |
+| --- | --- | --- |
+| builtin tools | **26** | 文件、shell、registry、web、task、runtime 的直接动作 |
+| commands | **32** | 可复用 workflow 入口 |
+| skills | **34** | 按需加载的过程性指导 |
+| agents | **32** | 有边界的 delegation 与 side work |
+| plugins | **7** | 可安装的 workflow family |
+| MCP servers | **10** | 本地 service bundle，负责 tools / resources / prompts |
+| MCP tools / resources / prompts | **29 / 27 / 10** | 可复用、可外化的知识和动作 |
+
+### 🧭 怎么快速摸清这个生态
+
+在会话里：
+
+```text
+/plugins
+/plugins marketplaces
+/mcp
+/commands
+/agents
+/skills
+```
+
+在 CLI 里：
+
+```bash
+evoh plugins-list --workspace .
+evoh marketplaces-list --workspace .
+evoh marketplace-plugins --workspace .
+evoh mcp-list --workspace . --kind all
+```
 
 ---
 

@@ -245,40 +245,79 @@ evoh provider-detect --workspace .
 ---
 
 <a id="plugin-mcp-ecosystem"></a>
-## 🕸️ Plugin and MCP Ecosystem (╭☞•́⍛•̀)╭☞
+## 🕸️🔌 Plugin and MCP Ecosystem \(^o^)/
 
-Bundled plugins:
+<p align="center">
+  <strong>🔧 installable workflow bundles • 🛰️ MCP-native utilities • 🧩 one visible workspace ecosystem</strong>
+</p>
 
-- `safe-inspector`
-- `evolution-studio`
-- `web-research`
-- `workspace-ops`
-- `delivery-lab`
-- `docs-foundry`
-- `session-lab`
+EvoHarness treats plugins and MCP as part of the product surface, not as sidecar extras.
 
-Bundled MCP surfaces cover:
+What that means in practice:
 
-- docs search and repair
-- workspace surface inspection
-- release-readiness review
-- session and approval forensics
-- public-web research
-- plugin and workflow design
+- 🔌 plugins bundle commands, skills, agents, and MCP surfaces around one workflow family
+- 🛰️ MCP bundles expose reusable tools, resources, and prompts for docs, sessions, quality, and workspace mapping
+- 🧱 everything stays workspace-native, so users can inspect the ecosystem instead of guessing what exists
 
 <div align="center">
   <img src="./.github/assets/evoharness-ecosystem.svg" alt="EvoHarness ecosystem overview" width="100%">
 </div>
 
-Current runtime surface:
+### ✨ Bundled Plugin Families
 
-- **26 builtin tools**
-- **32 commands**
-- **34 skills**
-- **32 agents**
-- **7 plugins**
-- **10 MCP servers**
-- **29 MCP tools / 27 MCP resources / 10 MCP prompts**
+| Plugin | Focus | What It Adds |
+| --- | --- | --- |
+| `safe-inspector` | safe read-only review | cautious inspection command, skill, and reviewer agent |
+| `evolution-studio` | trace triage + ecosystem growth | evolution commands, planning skills, and evolution-focused agents |
+| `web-research` | public web research | web command, research skill, scout agent, and MCP search/fetch bundle |
+| `workspace-ops` | workspace mapping + registry hygiene | topology commands, packaging skills, and workspace-intel MCP |
+| `delivery-lab` | release readiness + regression review | ship-readiness workflows and the quality-gate MCP bundle |
+| `docs-foundry` | docs repair + onboarding polish | README/docs workflows and the docs-gap MCP bundle |
+| `session-lab` | sessions + approvals + tasks | task-board / forensics workflows and the session-lab MCP bundle |
+
+### 🛰️ Core MCP Surfaces
+
+| MCP Surface | What It Exposes | Best For |
+| --- | --- | --- |
+| `workspace-docs` / `docs-gap` | doc search, excerpts, repair prompts | onboarding, README drift, docs lookup |
+| `workspace-intel` | workspace snapshot + surface search | understanding the live harness layout |
+| `quality-gate` | doctor report, promotions, session summary | release readiness and regression review |
+| `session-lab` | recent sessions, approvals, task board | long-horizon workflow forensics |
+| `web-research:web-research` | `search_web` + `fetch_page` | public-web research without leaving the harness |
+
+### 📡 Current Ecosystem Surface
+
+| Surface | Count | Why It Matters |
+| --- | --- | --- |
+| builtin tools | **26** | direct file, shell, registry, web, task, and runtime actions |
+| commands | **32** | reusable workflow entry points |
+| skills | **34** | on-demand procedural guidance |
+| agents | **32** | bounded delegation and focused side work |
+| plugins | **7** | installable workflow families |
+| MCP servers | **10** | local service bundles for tools, resources, and prompts |
+| MCP tools / resources / prompts | **29 / 27 / 10** | reusable externalized knowledge and actions |
+
+### 🧭 How to Explore the Ecosystem
+
+Inside the session:
+
+```text
+/plugins
+/plugins marketplaces
+/mcp
+/commands
+/agents
+/skills
+```
+
+From the CLI:
+
+```bash
+evoh plugins-list --workspace .
+evoh marketplaces-list --workspace .
+evoh marketplace-plugins --workspace .
+evoh mcp-list --workspace . --kind all
+```
 
 ---
 
