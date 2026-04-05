@@ -1,39 +1,44 @@
-<svg width="1600" height="520" viewBox="0 0 1600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1600" height="600" viewBox="0 0 1600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="cli-bg" x1="0" y1="0" x2="1600" y2="520" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#131826"/>
-      <stop offset="1" stop-color="#0F172A"/>
+    <linearGradient id="cli-bg" x1="0" y1="0" x2="1600" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#161B2B"/>
+      <stop offset="1" stop-color="#111827"/>
     </linearGradient>
-    <filter id="cli-shadow" x="0" y="0" width="1600" height="520" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feOffset dy="12"/>
+    <filter id="shadow" x="0" y="0" width="1600" height="600" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dy="16"/>
       <feGaussianBlur stdDeviation="18"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0.0588235 0 0 0 0 0.0901961 0 0 0 0 0.168627 0 0 0 0.2 0"/>
-      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_2"/>
-      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_2" result="shape"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0588235 0 0 0 0 0.0901961 0 0 0 0 0.168627 0 0 0 0.22 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_10"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_10" result="shape"/>
     </filter>
   </defs>
 
-  <g filter="url(#cli-shadow)">
-    <rect x="40" y="28" width="1520" height="444" rx="24" fill="url(#cli-bg)"/>
-    <rect x="40" y="28" width="1520" height="44" rx="24" fill="#2A2C3C"/>
-    <rect x="40" y="52" width="1520" height="420" rx="0 0 24 24" fill="#171A28"/>
+  <g filter="url(#shadow)">
+    <rect x="48" y="28" width="1504" height="500" rx="24" fill="url(#cli-bg)"/>
+    <rect x="48" y="28" width="1504" height="44" rx="24" fill="#2B3042"/>
+    <rect x="48" y="52" width="1504" height="476" rx="0 0 24 24" fill="#181D2D"/>
   </g>
 
-  <circle cx="82" cy="50" r="10" fill="#FB5F57"/>
-  <circle cx="118" cy="50" r="10" fill="#FEBC2E"/>
-  <circle cx="154" cy="50" r="10" fill="#28C840"/>
-  <text x="760" y="57" fill="#A1A1AA" font-size="18" font-family="Consolas, Menlo, Monaco, monospace" text-anchor="middle">terminal</text>
+  <circle cx="88" cy="50" r="10" fill="#FB5F57"/>
+  <circle cx="124" cy="50" r="10" fill="#FEBC2E"/>
+  <circle cx="160" cy="50" r="10" fill="#28C840"/>
+  <text x="800" y="57" fill="#A1A1AA" font-size="18" font-family="Consolas, Menlo, Monaco, monospace" text-anchor="middle">terminal</text>
 
-  <text x="84" y="116" fill="#22D3EE" font-size="30" font-family="Consolas, Menlo, Monaco, monospace">PS I:\EVO\EvoHarness&gt; </text>
-  <text x="440" y="116" fill="#E5E7EB" font-size="30" font-family="Consolas, Menlo, Monaco, monospace">python -m evo_harness</text>
+  <text x="82" y="118" fill="#22D3EE" font-size="31" font-family="Consolas, Menlo, Monaco, monospace">PS I:\EVO\EvoHarness&gt; </text>
+  <text x="480" y="118" fill="#FFFFFF" font-size="31" font-family="Consolas, Menlo, Monaco, monospace">python -m evo_harness</text>
+  <rect x="900" y="90" width="18" height="34" rx="2" fill="#67E8F9"/>
 
-  <text x="90" y="188" fill="#67E8F9" font-size="76" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO HARNESS</text>
-  <text x="94" y="232" fill="#E5E7EB" font-size="28" font-family="Consolas, Menlo, Monaco, monospace">Evo Harness  (^_^)/</text>
+  <text x="82" y="190" fill="#67E8F9" font-size="84" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO HARNESS</text>
+  <text x="84" y="234" fill="#FFFFFF" font-size="29" font-family="Consolas, Menlo, Monaco, monospace">Evo Harness  (^_^)/</text>
 
-  <text x="94" y="286" fill="#A5F3FC" font-size="24" font-family="Consolas, Menlo, Monaco, monospace">terminal-native agent runtime with commands, MCP, subagents, and a little attitude</text>
-  <text x="94" y="322" fill="#F472B6" font-size="24" font-family="Consolas, Menlo, Monaco, monospace">make the harness feel alive, not just available  \(^o^)/</text>
+  <text x="82" y="300" fill="#A5F3FC" font-size="24" font-family="Consolas, Menlo, Monaco, monospace">terminal-native agent runtime with commands, MCP, subagents, and a little attitude</text>
+  <text x="82" y="338" fill="#F472B6" font-size="24" font-family="Consolas, Menlo, Monaco, monospace">make the harness feel alive, not just available  \(^o^)/</text>
 
-  <text x="94" y="378" fill="#FFFFFF" font-size="22" font-family="Consolas, Menlo, Monaco, monospace">workspace  evo-harness     provider  anthropic-compatible     model  claude-sonnet-4</text>
-  <text x="94" y="412" fill="#38BDF8" font-size="22" font-family="Consolas, Menlo, Monaco, monospace">commands  32   skills  34   agents  32   plugins  7   mcp  10/29</text>
-  <text x="94" y="446" fill="#CBD5E1" font-size="22" font-family="Consolas, Menlo, Monaco, monospace">/help   /resume   /permissions   /plugins   Ctrl+C</text>
+  <text x="82" y="404" fill="#FFFFFF" font-size="22" font-family="Consolas, Menlo, Monaco, monospace">workspace  evo-harness    provider  anthropic-compatible    model  claude-sonnet-4</text>
+  <text x="82" y="438" fill="#38BDF8" font-size="22" font-family="Consolas, Menlo, Monaco, monospace">commands  32   skills  34   agents  32   plugins  7   mcp  10/29</text>
+  <text x="82" y="472" fill="#CBD5E1" font-size="22" font-family="Consolas, Menlo, Monaco, monospace">/help   /resume   /permissions   /plugins   ctrl+c</text>
+
+  <text x="82" y="522" fill="#22D3EE" font-size="26" font-family="Consolas, Menlo, Monaco, monospace">$ </text>
+  <text x="110" y="522" fill="#E5E7EB" font-size="26" font-family="Consolas, Menlo, Monaco, monospace">/workflow-blueprint provider debu</text>
+  <rect x="585" y="495" width="16" height="31" rx="2" fill="#67E8F9"/>
 </svg>

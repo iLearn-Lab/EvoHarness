@@ -1,11 +1,11 @@
-<div align="center">
-  <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="120">
-  <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="620">
-</div>
+<p align="center">
+  <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="152">&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="760">
+</p>
 
-<div align="center">
-  <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="94%">
-</div>
+<p align="center">
+  <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="98%">
+</p>
 
 <p align="center">
   <strong>English</strong> | <a href="./README.zh-CN.md">ZH-CN</a>
