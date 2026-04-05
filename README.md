@@ -134,31 +134,103 @@ In short: EvoHarness is not just "an agent with tools"; it is a **visible, edita
 <a id="quick-start"></a>
 ## 🚀 Quick Start \(^o^)/
 
-### Requirements
+### What You Need
 
 - Python 3.11+
-- Node.js 18+ if you want the React/Ink terminal frontend
+- Node.js 18+ only if you want the React/Ink frontend
 
-### Fastest Source Launch
+Without Node, EvoHarness still opens the text session `(^_^)/`
+
+### 1. Install and Inspect
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
 cd EvoHarness
-python -m evo_harness
+python -m pip install -e .
+evoh doctor --workspace .
 ```
 
-If `npm` is available, frontend dependencies are installed automatically on the first TUI launch `(^_^)/`
+If the doctor report looks healthy, you are ready to enter the harness.
 
-### Optional Editable Install
-
-If you want the shorter CLI alias:
+### 2. Start the Session
 
 ```bash
-python -m pip install -e .
-evoh
+evoh --workspace .
 ```
 
-### Useful First Commands
+If `npm` is available, EvoHarness will try the React/Ink frontend first.  
+If not, it falls back to the text session automatically.
+
+<p align="center">
+  <img src="./.github/assets/evoharness-session-home.png" alt="EvoHarness session home" width="100%">
+</p>
+
+<p align="center">
+  <strong>✨ First-run view: runtime deck, slash commands, and the live harness surface in one place</strong>
+</p>
+
+### 3. Configure Your Provider with `/setup`
+
+Inside the session, run:
+
+```text
+/setup
+```
+
+EvoHarness will ask for four things:
+
+- 🧩 `Provider profile`: which API family or gateway style you want
+- 🤖 `Model`: the exact model name you want to use
+- 🔑 `API key`: paste it now, or leave it blank if you already keep it elsewhere
+- 🌐 `Base URL`: required for custom gateways and non-default endpoints
+
+<p align="center">
+  <img src="./.github/assets/evoharness-setup-guide.png" alt="EvoHarness setup prompt" width="100%">
+</p>
+
+<p align="center">
+  <strong>🛠️ `/setup` is the fastest way to make the session actually usable</strong>
+</p>
+
+### Which Provider Profile Should You Choose?
+
+- `anthropic`: native Claude API
+- `openai-compatible`: GLM, Qwen, DeepSeek, DashScope, OpenAI-style gateways, and most `/v1/chat/completions` endpoints
+- `moonshot`: Kimi / Moonshot
+- `anthropic-compatible`: Claude-style proxies and internal gateways
+- `auto`: let EvoHarness infer the profile from your model and base URL
+
+Recommended pattern:
+
+- 🔐 keep your key in an environment variable when possible
+- 🧭 use `/setup` to choose the profile, model, and base URL
+- 🧱 use `evoh init` if you want those settings scaffolded into a fresh workspace
+
+Quick key rules:
+
+- `anthropic` and `anthropic-compatible` typically use `ANTHROPIC_API_KEY`
+- `moonshot` typically uses `MOONSHOT_API_KEY`
+- `openai-compatible` defaults to `OPENAI_API_KEY`, unless you scaffold a custom one with `evoh init --api-key-env ...`
+
+### 4. Scaffold EvoHarness into Your Own Repository
+
+If you want to bring EvoHarness into another project instead of only running this repo:
+
+```bash
+evoh init --workspace . --provider-profile openai-compatible --model glm-5 --api-key-env ZHIPUAI_API_KEY --base-url https://open.bigmodel.cn/api/paas/v4/
+```
+
+This creates `CLAUDE.md`, `.evo-harness/settings.json`, starter `.claude/` assets, and the local MCP registry.
+
+Useful follow-up checks:
+
+```bash
+evoh provider-detect --workspace .
+evoh provider-template --profile openai-compatible --model glm-5
+evoh doctor --workspace .
+```
+
+### Helpful First Commands
 
 ```bash
 evoh doctor --workspace .
@@ -166,18 +238,20 @@ evoh tools-list --workspace .
 evoh commands-list --workspace .
 evoh agents-list --workspace .
 evoh mcp-list --workspace . --kind all
+evoh provider-detect --workspace .
 ```
 
-### Inside the Session
+### Helpful Session Commands
 
 ```text
 /help
-/permissions
-/resume
+/setup
+/login
+/doctor
 /plugins
-/plugins marketplaces
-/docs-refresh onboarding flow
-/workflow-blueprint provider debugging
+/resume
+/permissions
+/exit
 ```
 
 ---

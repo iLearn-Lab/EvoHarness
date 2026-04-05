@@ -134,28 +134,100 @@ EvoHarness 的核心架构判断是：**harness 本身就是一等工程表面**
 <a id="quick-start"></a>
 ## 🚀 快速开始
 
-### 环境要求
+### 你需要准备什么
 
 - Python 3.11+
-- Node.js 18+（如果需要 React/Ink terminal frontend）
+- Node.js 18+ 仅在你想使用 React/Ink 前端时需要
 
-### 最快启动方式
+即使没有 Node，EvoHarness 也能直接进入文本会话 `(^_^)/`
+
+### 1. 安装并先做一次检查
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
 cd EvoHarness
-python -m evo_harness
+python -m pip install -e .
+evoh doctor --workspace .
 ```
 
-如果本机存在 `npm`，首次 TUI 启动时会自动安装前端依赖 `(^_^)/`
+只要 `doctor` 报告健康，基本就可以开始使用了。
 
-### 可选命令别名
-
-如果你想直接使用更短的命令：
+### 2. 启动会话
 
 ```bash
-python -m pip install -e .
-evoh
+evoh --workspace .
+```
+
+如果本机存在 `npm`，EvoHarness 会优先尝试 React/Ink 前端。  
+如果没有，它会自动回退到文本会话。
+
+<p align="center">
+  <img src="./.github/assets/evoharness-session-home.png" alt="EvoHarness session home" width="100%">
+</p>
+
+<p align="center">
+  <strong>✨ 首次进入后，你会先看到 runtime deck、slash commands 和实时 harness surface</strong>
+</p>
+
+### 3. 在会话里用 `/setup` 配置 Provider
+
+进入会话后，先输入：
+
+```text
+/setup
+```
+
+EvoHarness 会依次问你四件事：
+
+- 🧩 `Provider profile`：你要接哪一类 API / gateway
+- 🤖 `Model`：你实际想跑的模型名
+- 🔑 `API key`：现在直接粘贴，或者如果你已经放在别处就先留空
+- 🌐 `Base URL`：如果你用的是自定义网关或非默认地址，这里必须明确填
+
+<p align="center">
+  <img src="./.github/assets/evoharness-setup-guide.png" alt="EvoHarness setup prompt" width="100%">
+</p>
+
+<p align="center">
+  <strong>🛠️ `/setup` 是把“能启动”变成“真能用”的最快路径</strong>
+</p>
+
+### Provider Profile 该怎么选？
+
+- `anthropic`：原生 Claude API
+- `openai-compatible`：GLM、Qwen、DeepSeek、DashScope，以及大多数 `/v1/chat/completions` 风格接口
+- `moonshot`：Kimi / Moonshot
+- `anthropic-compatible`：Claude Messages 风格的代理或内部网关
+- `auto`：让 EvoHarness 根据模型名和 base URL 自动判断
+
+推荐使用方式：
+
+- 🔐 优先把 API key 放在环境变量里
+- 🧭 用 `/setup` 负责 profile、model、base URL
+- 🧱 如果你是要给一个新仓库初始化 EvoHarness，再用 `evoh init`
+
+API key 这块可以直接这样理解：
+
+- `anthropic` 和 `anthropic-compatible` 通常对应 `ANTHROPIC_API_KEY`
+- `moonshot` 通常对应 `MOONSHOT_API_KEY`
+- `openai-compatible` 默认对应 `OPENAI_API_KEY`，但你也可以在 `evoh init --api-key-env ...` 时改成自己的变量名
+
+### 4. 把 EvoHarness 脚手架到你自己的仓库里
+
+如果你不是只想跑本仓库，而是想把 EvoHarness 接到你自己的项目里：
+
+```bash
+evoh init --workspace . --provider-profile openai-compatible --model glm-5 --api-key-env ZHIPUAI_API_KEY --base-url https://open.bigmodel.cn/api/paas/v4/
+```
+
+这会生成 `CLAUDE.md`、`.evo-harness/settings.json`、起步版 `.claude/` 资产，以及本地 MCP registry。
+
+后续建议马上跑：
+
+```bash
+evoh provider-detect --workspace .
+evoh provider-template --profile openai-compatible --model glm-5
+evoh doctor --workspace .
 ```
 
 ### 建议先跑的命令
@@ -166,18 +238,20 @@ evoh tools-list --workspace .
 evoh commands-list --workspace .
 evoh agents-list --workspace .
 evoh mcp-list --workspace . --kind all
+evoh provider-detect --workspace .
 ```
 
-### 会话内常用入口
+### 会话内建议先记住这些命令
 
 ```text
 /help
-/permissions
-/resume
+/setup
+/login
+/doctor
 /plugins
-/plugins marketplaces
-/docs-refresh onboarding flow
-/workflow-blueprint provider debugging
+/resume
+/permissions
+/exit
 ```
 
 ---
