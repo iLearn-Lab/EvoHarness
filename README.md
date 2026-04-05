@@ -134,14 +134,16 @@ In short: EvoHarness is not just "an agent with tools"; it is a **visible, edita
 <a id="quick-start"></a>
 ## 🚀 Quick Start \(^o^)/
 
-### What You Need
+### 🧰 What You Need
 
-- Python 3.11+
-- Node.js 18+ only if you want the React/Ink frontend
+| Item | Why It Matters |
+| --- | --- |
+| `Python 3.11+` | required for the runtime, CLI, MCP helpers, and local harness surface |
+| `Node.js 18+` | optional, only if you want the React/Ink frontend |
 
 Without Node, EvoHarness still opens the text session `(^_^)/`
 
-### 1. Install and Inspect
+### 1. 🔍 Install and Inspect
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
@@ -152,7 +154,7 @@ evoh doctor --workspace .
 
 If the doctor report looks healthy, you are ready to enter the harness.
 
-### 2. Start the Session
+### 2. 🚀 Start the Session
 
 ```bash
 evoh --workspace .
@@ -161,7 +163,7 @@ evoh --workspace .
 If `npm` is available, EvoHarness will try the React/Ink frontend first.  
 If not, it falls back to the text session automatically.
 
-### 3. Configure Your Provider with `/setup`
+### 3. 🛠️ Configure Your Provider with `/setup`
 
 Inside the session, run:
 
@@ -176,13 +178,15 @@ EvoHarness will ask for four things:
 - 🔑 `API key`: paste it now, or leave it blank if you already keep it elsewhere
 - 🌐 `Base URL`: required for custom gateways and non-default endpoints
 
-### Which Provider Profile Should You Choose?
+### 🧭 Which Provider Profile Should You Choose?
 
-- `anthropic`: native Claude API
-- `openai-compatible`: GLM, Qwen, DeepSeek, DashScope, OpenAI-style gateways, and most `/v1/chat/completions` endpoints
-- `moonshot`: Kimi / Moonshot
-- `anthropic-compatible`: Claude-style proxies and internal gateways
-- `auto`: let EvoHarness infer the profile from your model and base URL
+| Profile | Best Fit | API Style | Typical Key Env |
+| --- | --- | --- | --- |
+| `anthropic` | native Claude usage | Anthropic Messages API | `ANTHROPIC_API_KEY` |
+| `openai-compatible` | GLM, Qwen, DeepSeek, DashScope, OpenAI-like gateways | `/v1/chat/completions` | `OPENAI_API_KEY` by default |
+| `moonshot` | Kimi / Moonshot | OpenAI-compatible | `MOONSHOT_API_KEY` |
+| `anthropic-compatible` | Claude-style proxies and internal gateways | Anthropic-compatible | `ANTHROPIC_API_KEY` |
+| `auto` | fastest first try | inferred from model + base URL | inferred from your setup |
 
 Recommended pattern:
 
@@ -196,7 +200,7 @@ Quick key rules:
 - `moonshot` typically uses `MOONSHOT_API_KEY`
 - `openai-compatible` defaults to `OPENAI_API_KEY`, unless you scaffold a custom one with `evoh init --api-key-env ...`
 
-### 4. Scaffold EvoHarness into Your Own Repository
+### 4. 🧱 Scaffold EvoHarness into Your Own Repository
 
 If you want to bring EvoHarness into another project instead of only running this repo:
 
@@ -214,7 +218,7 @@ evoh provider-template --profile openai-compatible --model glm-5
 evoh doctor --workspace .
 ```
 
-### Helpful First Commands
+### 🧪 Helpful First Commands
 
 ```bash
 evoh doctor --workspace .
@@ -225,7 +229,7 @@ evoh mcp-list --workspace . --kind all
 evoh provider-detect --workspace .
 ```
 
-### Helpful Session Commands
+### 💬 Helpful Session Commands
 
 ```text
 /help
@@ -289,25 +293,31 @@ Once the session opens, EvoHarness keeps its operating state visible in the runt
 
 The main runtime fields mean:
 
-- 🧠 `provider` + `model`: which backend family and model you are talking to right now
-- 🔐 `mode`: the current permission mode
-- 🧩 `/<workspace-command>`: the active markdown workflow, such as `/read-only-inspect`
-- 📡 `surface`: the live counts for commands, skills, agents, plugins, and MCP
-- 💓 `pulse`: the current tasks, approvals, sessions, and token counters
+| Runtime Field | What It Tells You |
+| --- | --- |
+| 🧠 `provider` + `model` | which backend family and model you are talking to right now |
+| 🔐 `mode` | the current permission mode |
+| 🧩 `/<workspace-command>` | the active markdown workflow, such as `/read-only-inspect` |
+| 📡 `surface` | the live counts for commands, skills, agents, plugins, and MCP |
+| 💓 `pulse` | the current tasks, approvals, sessions, and token counters |
 
 Permission modes are simple:
 
-- `default`: read-only work runs freely; mutating actions ask for approval
-- `plan`: blocks mutating tools so you can inspect, map, and plan safely
-- `full-auto`: allows actions automatically inside sandbox bounds
+| Mode | Behavior | Best For |
+| --- | --- | --- |
+| `default` | read-only work runs freely; mutating actions ask for approval | normal day-to-day coding |
+| `plan` | blocks mutating tools so you can inspect, map, and plan safely | audits, exploration, repo understanding |
+| `full-auto` | allows actions automatically inside sandbox bounds | trusted fast iteration |
 
 Command layers are also explicit:
 
-- `/help`, `/setup`, `/doctor`, `/permissions`, `/resume`, `/plugins`, and `/mcp` are session slash commands
-- `/<workspace-command>` activates one markdown workflow command from `.claude/commands/`
-- skills are on-demand workflow guides
-- agents are bounded delegates
-- plugins bundle commands, skills, agents, and MCP surfaces together
+| Surface | What It Does |
+| --- | --- |
+| `/help`, `/setup`, `/doctor`, `/permissions`, `/resume`, `/plugins`, `/mcp` | session slash commands |
+| `/<workspace-command>` | activates one markdown workflow from `.claude/commands/` |
+| `skills` | on-demand workflow guides |
+| `agents` | bounded delegates |
+| `plugins` | bundle commands, skills, agents, and MCP surfaces together |
 
 Good first commands inside the session:
 
@@ -330,23 +340,6 @@ evoh agents-list --workspace .
 evoh tools-list --workspace .
 evoh mcp-list --workspace . --kind all
 ```
-
----
-
-## 📝 Citation (._.)
-
-If you want to cite EvoHarness as software:
-
-```bibtex
-@software{evoharness2026,
-  title  = {EvoHarness: A Terminal-Native Agent Harness with Controlled Self-Evolution},
-  author = {EvoHarness Contributors},
-  year   = {2026},
-  url    = {https://github.com/HITSZ-DS/EvoHarness}
-}
-```
-
-A machine-readable citation file is also provided in [CITATION.cff](./CITATION.cff).
 
 ---
 

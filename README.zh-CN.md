@@ -134,14 +134,16 @@ EvoHarness 的核心架构判断是：**harness 本身就是一等工程表面**
 <a id="quick-start"></a>
 ## 🚀 快速开始
 
-### 你需要准备什么
+### 🧰 你需要准备什么
 
-- Python 3.11+
-- Node.js 18+ 仅在你想使用 React/Ink 前端时需要
+| 项目 | 作用 |
+| --- | --- |
+| `Python 3.11+` | 运行核心 runtime、CLI、MCP helper，以及本地 harness surface |
+| `Node.js 18+` | 可选，仅在你想使用 React/Ink 前端时需要 |
 
 即使没有 Node，EvoHarness 也能直接进入文本会话 `(^_^)/`
 
-### 1. 安装并先做一次检查
+### 1. 🔍 安装并先做一次检查
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
@@ -152,7 +154,7 @@ evoh doctor --workspace .
 
 只要 `doctor` 报告健康，基本就可以开始使用了。
 
-### 2. 启动会话
+### 2. 🚀 启动会话
 
 ```bash
 evoh --workspace .
@@ -161,7 +163,7 @@ evoh --workspace .
 如果本机存在 `npm`，EvoHarness 会优先尝试 React/Ink 前端。  
 如果没有，它会自动回退到文本会话。
 
-### 3. 在会话里用 `/setup` 配置 Provider
+### 3. 🛠️ 在会话里用 `/setup` 配置 Provider
 
 进入会话后，先输入：
 
@@ -176,13 +178,15 @@ EvoHarness 会依次问你四件事：
 - 🔑 `API key`：现在直接粘贴，或者如果你已经放在别处就先留空
 - 🌐 `Base URL`：如果你用的是自定义网关或非默认地址，这里必须明确填
 
-### Provider Profile 该怎么选？
+### 🧭 Provider Profile 该怎么选？
 
-- `anthropic`：原生 Claude API
-- `openai-compatible`：GLM、Qwen、DeepSeek、DashScope，以及大多数 `/v1/chat/completions` 风格接口
-- `moonshot`：Kimi / Moonshot
-- `anthropic-compatible`：Claude Messages 风格的代理或内部网关
-- `auto`：让 EvoHarness 根据模型名和 base URL 自动判断
+| Profile | 更适合什么场景 | API 风格 | 常见 Key 环境变量 |
+| --- | --- | --- | --- |
+| `anthropic` | 原生 Claude 使用场景 | Anthropic Messages API | `ANTHROPIC_API_KEY` |
+| `openai-compatible` | GLM、Qwen、DeepSeek、DashScope、OpenAI-like 网关 | `/v1/chat/completions` | 默认 `OPENAI_API_KEY` |
+| `moonshot` | Kimi / Moonshot | OpenAI-compatible | `MOONSHOT_API_KEY` |
+| `anthropic-compatible` | Claude 风格代理或内部网关 | Anthropic-compatible | `ANTHROPIC_API_KEY` |
+| `auto` | 先快速跑通再说 | 根据 model + base URL 推断 | 跟随你的实际配置 |
 
 推荐使用方式：
 
@@ -196,7 +200,7 @@ API key 这块可以直接这样理解：
 - `moonshot` 通常对应 `MOONSHOT_API_KEY`
 - `openai-compatible` 默认对应 `OPENAI_API_KEY`，但你也可以在 `evoh init --api-key-env ...` 时改成自己的变量名
 
-### 4. 把 EvoHarness 脚手架到你自己的仓库里
+### 4. 🧱 把 EvoHarness 脚手架到你自己的仓库里
 
 如果你不是只想跑本仓库，而是想把 EvoHarness 接到你自己的项目里：
 
@@ -214,7 +218,7 @@ evoh provider-template --profile openai-compatible --model glm-5
 evoh doctor --workspace .
 ```
 
-### 建议先跑的命令
+### 🧪 建议先跑的命令
 
 ```bash
 evoh doctor --workspace .
@@ -225,7 +229,7 @@ evoh mcp-list --workspace . --kind all
 evoh provider-detect --workspace .
 ```
 
-### 会话内建议先记住这些命令
+### 💬 会话内建议先记住这些命令
 
 ```text
 /help
@@ -285,25 +289,31 @@ Bundled MCP surfaces 覆盖：
 
 你最值得先看懂的是这几项：
 
-- 🧠 `provider` + `model`：当前连接的是哪类后端、正在跑哪个模型
-- 🔐 `mode`：当前 permission mode
-- 🧩 `/<workspace-command>`：当前激活的 markdown workflow，比如 `/read-only-inspect`
-- 📡 `surface`：commands、skills、agents、plugins、MCP 的实时数量
-- 💓 `pulse`：tasks、approvals、sessions、tokens 等运行脉搏
+| Runtime 字段 | 它表示什么 |
+| --- | --- |
+| 🧠 `provider` + `model` | 当前连接的是哪类后端、正在跑哪个模型 |
+| 🔐 `mode` | 当前 permission mode |
+| 🧩 `/<workspace-command>` | 当前激活的 markdown workflow，比如 `/read-only-inspect` |
+| 📡 `surface` | commands、skills、agents、plugins、MCP 的实时数量 |
+| 💓 `pulse` | tasks、approvals、sessions、tokens 等运行脉搏 |
 
 权限模式其实很简单：
 
-- `default`：读操作直接跑，改动类操作需要审批
-- `plan`：阻止 mutating tools，适合先做检查、梳理和规划
-- `full-auto`：只要不超出 sandbox 边界，就自动执行
+| 模式 | 行为 | 更适合什么 |
+| --- | --- | --- |
+| `default` | 读操作直接跑，改动类操作需要审批 | 日常正常开发 |
+| `plan` | 阻止 mutating tools | 先检查、梳理、做规划 |
+| `full-auto` | 只要不超出 sandbox 边界，就自动执行 | 已经信任环境时的高速迭代 |
 
 命令层也很清楚：
 
-- `/help`、`/setup`、`/doctor`、`/permissions`、`/resume`、`/plugins`、`/mcp` 属于会话级 slash commands
-- `/<workspace-command>` 会激活 `.claude/commands/` 里的 markdown workflow
-- skills 是按需加载的流程指南
-- agents 是有边界的 delegation
-- plugins 会把 commands、skills、agents、MCP surface 打包在一起
+| 表面 | 它负责什么 |
+| --- | --- |
+| `/help`、`/setup`、`/doctor`、`/permissions`、`/resume`、`/plugins`、`/mcp` | 会话级 slash commands |
+| `/<workspace-command>` | 激活 `.claude/commands/` 里的 markdown workflow |
+| `skills` | 按需加载的流程指南 |
+| `agents` | 有边界的 delegation |
+| `plugins` | 把 commands、skills、agents、MCP surface 打包在一起 |
 
 建议第一次进会话先试这些：
 
@@ -326,23 +336,6 @@ evoh agents-list --workspace .
 evoh tools-list --workspace .
 evoh mcp-list --workspace . --kind all
 ```
-
----
-
-## 📝 引用
-
-如果你希望将 EvoHarness 作为软件系统引用：
-
-```bibtex
-@software{evoharness2026,
-  title  = {EvoHarness: A Terminal-Native Agent Harness with Controlled Self-Evolution},
-  author = {EvoHarness Contributors},
-  year   = {2026},
-  url    = {https://github.com/HITSZ-DS/EvoHarness}
-}
-```
-
-同时也提供了 [CITATION.cff](./CITATION.cff)。
 
 ---
 
