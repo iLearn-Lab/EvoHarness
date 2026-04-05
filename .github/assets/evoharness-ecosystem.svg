@@ -1,0 +1,104 @@
+<svg width="1600" height="560" viewBox="0 0 1600 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="1" stop-color="#EEF4FB"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#C4B5FD"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FDBA74"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+    <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F9A8D4"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#86EFAC"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="560" rx="28" fill="url(#bg)"/>
+  <text x="72" y="78" fill="#0F172A" font-size="42" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">🕸️ Ecosystem at a Glance</text>
+  <text x="72" y="118" fill="#475569" font-size="22" font-family="Segoe UI, Inter, Arial, sans-serif">plugins, markdown workflow surfaces, MCP servers, and long-horizon runtime state form one integrated harness ecosystem</text>
+
+  <g transform="translate(72 166)">
+    <rect width="250" height="320" rx="20" fill="#FFFFFF" stroke="#D8E3F2" stroke-width="2"/>
+    <rect x="22" y="20" width="118" height="30" rx="8" fill="url(#orange)"/>
+    <text x="81" y="40" fill="white" font-size="14" text-anchor="middle" font-family="Consolas, monospace" font-weight="700">PLUGINS</text>
+    <text x="22" y="84" fill="#0F172A" font-size="30" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">7 Bundled Packs</text>
+    <text x="24" y="128" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• safe-inspector</text>
+    <text x="24" y="158" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• evolution-studio</text>
+    <text x="24" y="188" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• web-research</text>
+    <text x="24" y="218" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• workspace-ops</text>
+    <text x="24" y="248" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• delivery-lab</text>
+    <text x="24" y="278" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• docs-foundry</text>
+    <text x="24" y="308" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• session-lab</text>
+  </g>
+
+  <g transform="translate(352 166)">
+    <rect width="314" height="320" rx="20" fill="#FFFFFF" stroke="#D8E3F2" stroke-width="2"/>
+    <rect x="22" y="20" width="150" height="30" rx="8" fill="url(#blue)"/>
+    <text x="97" y="40" fill="white" font-size="14" text-anchor="middle" font-family="Consolas, monospace" font-weight="700">WORKFLOW SURFACES</text>
+    <text x="22" y="84" fill="#0F172A" font-size="30" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">Markdown-Native Control</text>
+    <rect x="22" y="120" width="86" height="44" rx="12" fill="#DBEAFE"/>
+    <text x="65" y="148" text-anchor="middle" fill="#0F172A" font-size="19" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">32 Commands</text>
+    <rect x="120" y="120" width="74" height="44" rx="12" fill="#CFFAFE"/>
+    <text x="157" y="148" text-anchor="middle" fill="#0F172A" font-size="19" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">34 Skills</text>
+    <rect x="206" y="120" width="84" height="44" rx="12" fill="#E0E7FF"/>
+    <text x="248" y="148" text-anchor="middle" fill="#0F172A" font-size="19" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">32 Agents</text>
+    <text x="24" y="214" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• slash-command workflow control</text>
+    <text x="24" y="244" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• bounded delegation via subagents</text>
+    <text x="24" y="274" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• skill-loaded procedural guidance</text>
+    <text x="24" y="304" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• real workspace control surface</text>
+  </g>
+
+  <g transform="translate(696 166)">
+    <rect width="286" height="320" rx="20" fill="#FFFFFF" stroke="#D8E3F2" stroke-width="2"/>
+    <rect x="22" y="20" width="132" height="30" rx="8" fill="url(#violet)"/>
+    <text x="88" y="40" fill="white" font-size="14" text-anchor="middle" font-family="Consolas, monospace" font-weight="700">MCP SURFACE</text>
+    <text x="22" y="84" fill="#0F172A" font-size="30" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">10 Servers</text>
+    <text x="24" y="128" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• 29 tools</text>
+    <text x="24" y="158" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• 27 resources</text>
+    <text x="24" y="188" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• 10 prompts</text>
+    <text x="24" y="236" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• docs and workspace inspection</text>
+    <text x="24" y="266" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• release and session analytics</text>
+    <text x="24" y="296" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• public-web research workflows</text>
+  </g>
+
+  <g transform="translate(1012 166)">
+    <rect width="250" height="320" rx="20" fill="#FFFFFF" stroke="#D8E3F2" stroke-width="2"/>
+    <rect x="22" y="20" width="126" height="30" rx="8" fill="url(#cyan)"/>
+    <text x="85" y="40" fill="white" font-size="14" text-anchor="middle" font-family="Consolas, monospace" font-weight="700">RUNTIME STATE</text>
+    <text x="22" y="84" fill="#0F172A" font-size="30" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">Long-Horizon Memory</text>
+    <text x="24" y="128" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• session archive</text>
+    <text x="24" y="158" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• task records</text>
+    <text x="24" y="188" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• approvals and policies</text>
+    <text x="24" y="218" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• memory and instructions</text>
+    <text x="24" y="248" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• analytics and doctor state</text>
+  </g>
+
+  <g transform="translate(1292 166)">
+    <rect width="236" height="320" rx="20" fill="#FFFFFF" stroke="#D8E3F2" stroke-width="2"/>
+    <rect x="22" y="20" width="156" height="30" rx="8" fill="url(#green)"/>
+    <text x="100" y="40" fill="white" font-size="14" text-anchor="middle" font-family="Consolas, monospace" font-weight="700">EVOLUTION CONTROL</text>
+    <text x="22" y="84" fill="#0F172A" font-size="30" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700">Bounded Change</text>
+    <text x="24" y="128" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• operator proposal</text>
+    <text x="24" y="158" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• candidate patches</text>
+    <text x="24" y="188" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• validation gates</text>
+    <text x="24" y="218" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• promote / hold / rollback</text>
+    <text x="24" y="248" fill="#334155" font-size="20" font-family="Segoe UI, Inter, Arial, sans-serif">• ecosystem growth discipline</text>
+  </g>
+</svg>

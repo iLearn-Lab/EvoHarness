@@ -35,9 +35,9 @@
   <img src="https://img.shields.io/badge/mcp_servers-10-8B5CF6?style=flat-square" alt="MCP Servers">
 </p>
 
-EvoHarness makes the harness itself explicit: tools, commands, skills, agents, plugins, MCP, memory, approvals, sessions, and evolution operators remain visible, editable, and inspectable.
+EvoHarness turns the harness from hidden glue into a visible, extensible, and research-grade system surface.
 
-Its core orientation is not generic “agent UX”, but **harness research**:
+Its core orientation is **harness research**:
 
 - how terminal-native coding agents should expose tools, workflow surfaces, and governance
 - how archived runtime evidence can drive **controlled** self-evolution
@@ -51,7 +51,7 @@ Its core orientation is not generic “agent UX”, but **harness research**:
   <img src="./.github/assets/evoharness-features.svg" alt="EvoHarness key harness features" width="100%">
 </div>
 
-EvoHarness combines five visible surfaces:
+EvoHarness combines five high-leverage surfaces:
 
 - **Agent Loop** for iterative tool-use and session control
 - **Harness Toolkit** for files, shell, search, task, registry, MCP, and subagent operations
@@ -102,7 +102,7 @@ The runtime ties together:
 - plugin and MCP ecosystems
 - memory, analytics, and evolution planning
 
-That is the main architectural stance of the project: the harness is not background glue, it is the primary system under study.
+The architectural stance is simple: the harness is not background glue, it is the primary system under study.
 
 ---
 
@@ -168,7 +168,7 @@ Bundled plugins:
 - `docs-foundry`
 - `session-lab`
 
-Bundled local MCP surfaces cover:
+Bundled MCP surfaces cover:
 
 - docs search and repair
 - workspace surface inspection
@@ -176,6 +176,10 @@ Bundled local MCP surfaces cover:
 - session and approval forensics
 - public-web research
 - plugin and workflow design
+
+<div align="center">
+  <img src="./.github/assets/evoharness-ecosystem.svg" alt="EvoHarness ecosystem overview" width="100%">
+</div>
 
 Current runtime surface:
 
