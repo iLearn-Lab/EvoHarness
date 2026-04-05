@@ -17,45 +17,6 @@
   <strong>English</strong> | <a href="./README.zh-CN.md">ZH-CN</a>
 </p>
 
-<p align="center">
-  <strong>Terminal-Native Agent Harness</strong>
-</p>
-
-<p align="center">
-  Coding workflows | plugins | MCP | approvals | controlled self-evolution \(^o^)/
-</p>
-
-<p align="center">
-  make the harness feel alive, sharp, and research-grade  (^_^)/ 
-</p>
-
-<p align="center">
-  <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-python_-m_evo__harness-2563EB?style=for-the-badge" alt="Quick Start"></a>
-  <a href="#-controlled-self-evolution"><img src="https://img.shields.io/badge/Self--Evolution-Controlled-7C3AED?style=for-the-badge" alt="Self Evolution"></a>
-  <a href="#-harness-architecture"><img src="https://img.shields.io/badge/Architecture-Visible-334155?style=for-the-badge" alt="Architecture"></a>
-  <a href="#-plugin-and-mcp-ecosystem"><img src="https://img.shields.io/badge/Ecosystem-Plugins_+_MCP-F59E0B?style=for-the-badge" alt="Ecosystem"></a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/tools-26-14B8A6?style=flat-square" alt="Tools">
-  <img src="https://img.shields.io/badge/commands-32-0EA5E9?style=flat-square" alt="Commands">
-  <img src="https://img.shields.io/badge/skills-34-06B6D4?style=flat-square" alt="Skills">
-  <img src="https://img.shields.io/badge/agents-32-3B82F6?style=flat-square" alt="Agents">
-  <img src="https://img.shields.io/badge/plugins-7-F59E0B?style=flat-square" alt="Plugins">
-  <img src="https://img.shields.io/badge/mcp_servers-10-8B5CF6?style=flat-square" alt="MCP Servers">
-</p>
-
-EvoHarness turns the harness from hidden glue into a visible, extensible, and research-grade system surface.
-
-Its core orientation is **harness research**:
-
-- how terminal-native coding agents should expose tools, workflow surfaces, and governance
-- how archived runtime evidence can drive **controlled** self-evolution
-- how markdown, plugins, and MCP can act as real research and engineering surfaces
-
----
-
 ## 🧠 Controlled Self-Evolution (-_-)
 
 <div align="center">
