@@ -1,16 +1,7 @@
-<table align="center">
-  <tr>
-    <td width="190" align="center">
-      <img src="./.github/assets/evoharness-mark.svg" alt="EvoHarness mark" width="150">
-    </td>
-    <td align="left">
-      <h1>EvoHarness</h1>
-      <p><strong>Terminal-Native Agent Harness</strong></p>
-      <p>Coding workflows | plugins | MCP | approvals | controlled self-evolution \(^o^)/</p>
-      <p>make the harness feel alive, sharp, and research-grade  (^_^)/</p>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="./.github/assets/evoharness-mark.svg" alt="EvoHarness mark" width="120">
+  <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="620">
+</div>
 
 <div align="center">
   <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="94%">
@@ -21,11 +12,15 @@
 </p>
 
 <p align="center">
-  <strong>EvoHarness</strong> is a terminal-native agent harness for coding workflows and controlled self-evolution research <code>(^_^)/</code>
+  <strong>Terminal-Native Agent Harness</strong>
 </p>
 
 <p align="center">
-  markdown-first | plugin-native | MCP-ready | session-aware | self-evolving
+  Coding workflows | plugins | MCP | approvals | controlled self-evolution \(^o^)/
+</p>
+
+<p align="center">
+  make the harness feel alive, sharp, and research-grade  (^_^)/ 
 </p>
 
 <p align="center">

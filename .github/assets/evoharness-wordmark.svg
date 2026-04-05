@@ -1,0 +1,11 @@
+<svg width="1100" height="220" viewBox="0 0 1100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wordmark-blue" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#60A5FA"/>
+    </linearGradient>
+  </defs>
+  <rect width="1100" height="220" fill="white"/>
+  <text x="12" y="154" fill="url(#wordmark-blue)" font-size="120" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="800">Evo</text>
+  <text x="258" y="154" fill="#334155" font-size="120" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="800">Harness</text>
+</svg>

@@ -1,5 +1,6 @@
 <div align="center">
-  <img src="./.github/assets/evoharness-banner.svg" alt="EvoHarness" width="100%">
+  <img src="./.github/assets/evoharness-mark.svg" alt="EvoHarness mark" width="120">
+  <img src="./.github/assets/evoharness-wordmark.svg" alt="EvoHarness wordmark" width="620">
 </div>
 
 <div align="center">
@@ -11,11 +12,15 @@
 </p>
 
 <p align="center">
-  <strong>EvoHarness</strong> 是一个面向 coding workflows 与可控自进化研究的 terminal-native agent harness <code>(^_^)/</code>
+  <strong>Terminal-Native Agent Harness</strong>
 </p>
 
 <p align="center">
-  markdown-first | plugin-native | MCP-ready | session-aware | self-evolving
+  Coding workflows | plugins | MCP | approvals | controlled self-evolution \(^o^)/
+</p>
+
+<p align="center">
+  make the harness feel alive, sharp, and research-grade  (^_^)/ 
 </p>
 
 <p align="center">
