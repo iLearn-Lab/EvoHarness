@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img src="./.github/assets/evoharness-cli-demo.svg" alt="EvoHarness CLI demo" width="82%">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&pause=1300&color=7DD3FC&center=true&vCenter=true&width=980&lines=EvoHarness+%2F%2F+Terminal-Native+Agent+Harness;Controlled+Self-Evolution+%2F%2F+Plugins+%2F%2F+MCP;Coding+workflows+with+visible+harness+surfaces" alt="EvoHarness typing intro" />
 </p>
 
 <p align="center">
