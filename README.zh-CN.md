@@ -14,62 +14,82 @@
 </p>
 
 <p align="center">
-  <a href="./README.md">English</a> | <strong>????</strong>
+  <a href="./README.md">English</a> | <strong>简体中文</strong>
 </p>
 
-## ?? ?????
+## 🧠 可控自进化
 
 <div align="center">
   <img src="./.github/assets/evoharness-self-evolution.svg" alt="Controlled self-evolution pipeline" width="100%">
 </div>
 
-EvoHarness ??????????? **bounded runtime pipeline**????????????
+EvoHarness 将“自进化”定义为一个**受约束的系统闭环**，作用对象不是模型本身，而是 harness 的可见工程表面。
 
-?????
+这个方向成立的前提有三点：
 
-1. archive ?? sessions?tool histories ? runtime traces
-2. analyze failure modes?ecosystem gaps ? coordination pressure
-3. ???? operator family ??????? `stop`?`distill_memory`?`revise_command`?`revise_skill`?`grow_ecosystem`
-4. ???? workspace ?? candidate patches
-5. validate before promotion
-6. promote?hold ? rollback
+1. **证据真实**：进化依据来自真实 sessions、tool histories、approvals、failures 与 workspace state  
+2. **动作有界**：变化通过显式 operator family 提出，例如 `distill_memory`、`revise_command`、`revise_skill`、`grow_ecosystem`  
+3. **提升受治理**：candidate patch 必须经过 validation、promotion policy 与 rollback discipline  
 
-????
+在 EvoHarness 中，进化目标主要包括：
 
-- failure modes ???
-- operator choice ???
-- candidate-first evolution
-- promotion / rollback discipline
-- workspace-native artifacts??????????
+- commands 与 skills
+- agents 与 plugin bundles
+- MCP registries 与 workflow ecosystems
+- persistent memory 与 instruction layers
+- promotion 与 safety policy surfaces
+
+运行闭环是：
+
+1. archive sessions、traces、tool histories 与 failure evidence  
+2. analyze harness 在哪里欠支持任务、或过度探索搜索空间  
+3. choose a bounded operator family  
+4. materialize candidate patches against the real workspace  
+5. validate before promotion  
+6. promote、hold 或 rollback  
+
+这套设计强调：
+
+- 证据驱动，而不是凭空自改
+- operator 语义显式，而不是自由变异
+- candidate-first progression，而不是直接改动 active surface
+- promotion / rollback discipline，而不是不可逆漂移
+- workspace-native artifacts，而不是隐藏内部状态
+
+从研究角度看，EvoHarness 的价值在于把这三件事都暴露出来：
+
+- 改进压力来自哪里
+- 允许改变什么
+- 这些变化如何进入 active runtime
 
 ---
 
-## ?? Harness ??
+## 🧩 Harness 架构
 
 <div align="center">
   <img src="./.github/assets/evoharness-architecture.svg" alt="EvoHarness architecture overview" width="100%">
 </div>
 
-?????????????
+运行时把这些部分连接起来：
 
-- terminal interaction ? slash-command control
-- tool execution?approvals?tasks?session state
-- `.claude/` ???? workflow surfaces
-- plugin ? MCP ecosystem
-- memory?analytics ? evolution planning
+- terminal interaction 与 slash-command control
+- tool execution、approvals、tasks、session state
+- `.claude/` 中的可见 workflow surfaces
+- plugin 与 MCP ecosystem
+- memory、analytics 与 evolution planning
 
-?????????????**harness ????????????????**
+这个项目的架构立场很直接：**harness 不是背景胶水，而是主要研究对象。**
 
 ---
 
-## ?? ????
+## 🚀 快速开始
 
-### ????
+### 环境要求
 
 - Python 3.11+
-- Node.js 18+?????? React/Ink terminal frontend?
+- Node.js 18+（如果需要 React/Ink terminal frontend）
 
-### ??????
+### 最快启动方式
 
 ```bash
 git clone https://github.com/HITSZ-DS/EvoHarness.git
@@ -77,18 +97,18 @@ cd EvoHarness
 python -m evo_harness
 ```
 
-????? `npm`??? TUI ???????????? `(^_^)/`
+如果本机存在 `npm`，首次 TUI 启动时会自动安装前端依赖 `(^_^)/`
 
-### ????????
+### 可选命令别名
 
-??????????????
+如果你想直接使用更短的命令：
 
 ```bash
 python -m pip install -e .
 evoh
 ```
 
-### ???????
+### 建议先跑的命令
 
 ```bash
 evoh doctor --workspace .
@@ -98,7 +118,7 @@ evoh agents-list --workspace .
 evoh mcp-list --workspace . --kind all
 ```
 
-### ???????
+### 会话内常用入口
 
 ```text
 /help
@@ -112,7 +132,7 @@ evoh mcp-list --workspace . --kind all
 
 ---
 
-## ??? Plugin ? MCP ??
+## 🕸️ Plugin 与 MCP 生态
 
 Bundled plugins:
 
@@ -124,16 +144,16 @@ Bundled plugins:
 - `docs-foundry`
 - `session-lab`
 
-Bundled local MCP surfaces ???
+Bundled MCP surfaces 覆盖：
 
-- docs search ? repair
+- docs search 与 repair
 - workspace surface inspection
 - release-readiness review
-- session ? approval forensics
+- session 与 approval forensics
 - public-web research
-- plugin ? workflow design
+- plugin 与 workflow design
 
-?? runtime surface?
+当前 runtime surface：
 
 - **26 builtin tools**
 - **32 commands**
@@ -145,7 +165,7 @@ Bundled local MCP surfaces ???
 
 ---
 
-## ?? ??
+## 📚 文档
 
 - [Architecture](./docs/architecture.md)
 - [Feature Matrix (zh-CN)](./docs/feature-matrix.zh-CN.md)
@@ -155,9 +175,9 @@ Bundled local MCP surfaces ???
 
 ---
 
-## ?? ??
+## 📝 引用
 
-?????? EvoHarness ?????????
+如果你希望将 EvoHarness 作为软件系统引用：
 
 ```bibtex
 @software{evoharness2026,
@@ -168,10 +188,10 @@ Bundled local MCP surfaces ???
 }
 ```
 
-?????? [CITATION.cff](./CITATION.cff)?
+同时也提供了 [CITATION.cff](./CITATION.cff)。
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache-2.0?? [LICENSE](./LICENSE)?
+Apache-2.0，见 [LICENSE](./LICENSE)。
