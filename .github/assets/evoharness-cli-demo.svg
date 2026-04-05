@@ -1,36 +1,30 @@
-<svg width="1600" height="330" viewBox="0 0 1600 330" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1600" height="300" viewBox="0 0 1600 300" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="cli-bg" x1="0" y1="0" x2="1600" y2="330" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#171C2C"/>
-      <stop offset="1" stop-color="#111827"/>
+    <linearGradient id="cli-bg" x1="0" y1="0" x2="1600" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#181B2B"/>
+      <stop offset="1" stop-color="#131726"/>
     </linearGradient>
-    <filter id="shadow" x="0" y="0" width="1600" height="330" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <filter id="shadow" x="0" y="0" width="1600" height="300" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
       <feOffset dy="14"/>
       <feGaussianBlur stdDeviation="16"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0.0588235 0 0 0 0 0.0901961 0 0 0 0 0.168627 0 0 0 0.2 0"/>
-      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_13"/>
-      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_13" result="shape"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0588235 0 0 0 0 0.0901961 0 0 0 0 0.168627 0 0 0 0.18 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_14"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_14" result="shape"/>
     </filter>
   </defs>
 
   <g filter="url(#shadow)">
-    <rect x="70" y="26" width="1460" height="250" rx="22" fill="url(#cli-bg)"/>
-    <rect x="70" y="26" width="1460" height="40" rx="22" fill="#2B3042"/>
-    <rect x="70" y="50" width="1460" height="226" rx="0 0 22 22" fill="#181D2D"/>
+    <rect x="70" y="24" width="1460" height="200" rx="22" fill="url(#cli-bg)"/>
+    <rect x="70" y="24" width="1460" height="40" rx="22" fill="#2C3040"/>
+    <rect x="70" y="48" width="1460" height="176" rx="0 0 22 22" fill="#181A29"/>
   </g>
 
-  <circle cx="108" cy="46" r="10" fill="#FB5F57"/>
-  <circle cx="142" cy="46" r="10" fill="#FEBC2E"/>
-  <circle cx="176" cy="46" r="10" fill="#28C840"/>
-  <text x="800" y="52" fill="#A1A1AA" font-size="18" font-family="Consolas, Menlo, Monaco, monospace" text-anchor="middle">terminal</text>
+  <circle cx="108" cy="44" r="10" fill="#FB5F57"/>
+  <circle cx="142" cy="44" r="10" fill="#FEBC2E"/>
+  <circle cx="176" cy="44" r="10" fill="#28C840"/>
+  <text x="800" y="50" fill="#9CA3AF" font-size="18" font-family="Consolas, Menlo, Monaco, monospace" text-anchor="middle">terminal</text>
 
-  <text x="100" y="106" fill="#22D3EE" font-size="28" font-family="Consolas, Menlo, Monaco, monospace">$</text>
-  <text x="134" y="106" fill="#E5E7EB" font-size="28" font-family="Consolas, Menlo, Monaco, monospace">python -m evo_harness</text>
-  <rect x="528" y="81" width="15" height="29" rx="2" fill="#67E8F9"/>
-
-  <text x="100" y="156" fill="#67E8F9" font-size="52" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">E</text>
-  <text x="100" y="190" fill="#67E8F9" font-size="52" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO</text>
-  <text x="100" y="224" fill="#67E8F9" font-size="52" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO HAR</text>
-  <text x="100" y="258" fill="#67E8F9" font-size="52" font-family="Consolas, Menlo, Monaco, monospace" font-weight="700">EVO HARNESS</text>
-  <rect x="595" y="217" width="15" height="44" rx="2" fill="#67E8F9"/>
+  <text x="108" y="136" fill="#22D3EE" font-size="42" font-family="Consolas, Menlo, Monaco, monospace">$</text>
+  <text x="164" y="136" fill="#E5E7EB" font-size="42" font-family="Consolas, Menlo, Monaco, monospace">evoh</text>
+  <rect x="286" y="104" width="22" height="42" rx="2" fill="#67E8F9"/>
 </svg>
