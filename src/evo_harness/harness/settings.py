@@ -462,6 +462,19 @@ def _env_overrides() -> dict[str, Any]:
         _assign_nested(raw, ("provider", "auth_scheme"), "bearer")
     if os.environ.get("MOONSHOT_BASE_URL"):
         _assign_nested(raw, ("provider", "base_url"), os.environ["MOONSHOT_BASE_URL"])
+    zhipu_key_env = next(
+        (name for name in ("ZHIPUAI_API_KEY", "BIGMODEL_API_KEY", "GLM_API_KEY") if os.environ.get(name)),
+        None,
+    )
+    if zhipu_key_env:
+        _assign_nested(raw, ("provider", "provider"), "openai")
+        _assign_nested(raw, ("provider", "profile"), "zhipu")
+        _assign_nested(raw, ("provider", "api_format"), "openai-chat")
+        _assign_nested(raw, ("provider", "api_key_env"), zhipu_key_env)
+        _assign_nested(raw, ("provider", "auth_scheme"), "bearer")
+    zhipu_base_url = os.environ.get("ZHIPUAI_BASE_URL") or os.environ.get("BIGMODEL_BASE_URL")
+    if zhipu_base_url:
+        _assign_nested(raw, ("provider", "base_url"), zhipu_base_url)
 
     return raw
 

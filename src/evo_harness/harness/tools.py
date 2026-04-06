@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import tempfile
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -207,7 +208,7 @@ class WriteFileTool(BaseTool):
 class BashTool(BaseTool):
     name = "bash"
     aliases = ("run_command", "shell")
-    description = "Run one shell command inside the workspace."
+    description = "Run one shell command inside the workspace. On Windows this uses PowerShell."
     category = "execution"
     tags = ("shell", "command", "process")
     destructive = True
@@ -239,11 +240,77 @@ class BashTool(BaseTool):
         return {
             "type": "object",
             "properties": {
-                "command": {"type": "string"},
-                "cwd": {"type": "string"},
-                "timeout_ms": {"type": "integer"},
+                "command": {"type": "string", "description": "Shell command text. Use PowerShell syntax on Windows."},
+                "cwd": {"type": "string", "description": "Optional workspace-relative working directory."},
+                "timeout_ms": {"type": "integer", "description": "Optional timeout in milliseconds."},
             },
             "required": ["command"],
+            "additionalProperties": False,
+        }
+
+
+class DownloadFileTool(BaseTool):
+    name = "download_file"
+    description = "Download one URL and save it to a workspace file."
+    category = "web"
+    tags = ("web", "download", "http", "file")
+    destructive = True
+
+    def execute(self, arguments: dict[str, Any], context: ToolExecutionContext) -> ToolResult:
+        import urllib.request
+
+        url = str(arguments["url"])
+        destination = _resolve_path(context.cwd, arguments["path"])
+        overwrite = bool(arguments.get("overwrite", False))
+        timeout = max(1, int(arguments.get("timeout_seconds", 30)))
+        max_bytes = int(arguments.get("max_bytes", 20 * 1024 * 1024))
+        if destination.exists() and not overwrite:
+            return ToolResult(output=f"Destination already exists: {destination}", is_error=True)
+
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        request = urllib.request.Request(url, headers={"User-Agent": "evo-harness/0.1"})
+        temp_path: Path | None = None
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                with tempfile.NamedTemporaryFile(delete=False, dir=destination.parent, suffix=".download") as handle:
+                    temp_path = Path(handle.name)
+                    total_bytes = 0
+                    while True:
+                        chunk = response.read(64 * 1024)
+                        if not chunk:
+                            break
+                        total_bytes += len(chunk)
+                        if total_bytes > max_bytes:
+                            raise ValueError(f"Download exceeded max_bytes={max_bytes}")
+                        handle.write(chunk)
+                temp_path.replace(destination)
+                content_type = str(response.headers.get("Content-Type", "") or "")
+        except Exception as exc:
+            if temp_path is not None and temp_path.exists():
+                temp_path.unlink(missing_ok=True)
+            return ToolResult(output=f"Download failed: {exc}", is_error=True)
+
+        return ToolResult(
+            output=f"Downloaded {total_bytes} bytes from {url} to {destination}",
+            metadata={
+                "path": str(destination),
+                "url": url,
+                "bytes": total_bytes,
+                "content_type": content_type,
+            },
+        )
+
+    def input_schema(self) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "HTTP(S) URL to download."},
+                "path": {"type": "string", "description": "Workspace-relative destination file path."},
+                "overwrite": {"type": "boolean", "description": "Replace the destination file if it already exists."},
+                "timeout_seconds": {"type": "integer", "description": "Network timeout in seconds."},
+                "max_bytes": {"type": "integer", "description": "Abort if the response grows beyond this many bytes."},
+            },
+            "required": ["url", "path"],
             "additionalProperties": False,
         }
 
@@ -1198,6 +1265,7 @@ def create_default_tool_registry() -> ToolRegistry:
         ReadFileTool(),
         WriteFileTool(),
         BashTool(),
+        DownloadFileTool(),
         GlobTool(),
         ListDirTool(),
         GrepTool(),

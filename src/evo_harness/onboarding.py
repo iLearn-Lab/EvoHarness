@@ -213,6 +213,7 @@ def _default_model_for_profile(profile_name: str) -> str:
         "openai": "gpt-4.1-mini",
         "openai-compatible": "gpt-4.1-mini",
         "moonshot": "kimi-k2.5",
+        "zhipu": "glm-5",
     }
     return defaults.get(profile_name, "claude-sonnet-4")
 

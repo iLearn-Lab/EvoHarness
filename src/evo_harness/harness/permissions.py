@@ -7,7 +7,7 @@ from pathlib import Path
 from evo_harness.harness.settings import PermissionSettings, SandboxSettings
 
 
-NETWORK_TOOLS = {"web_fetch", "mcp_call_tool", "mcp_read_resource", "mcp_get_prompt"}
+NETWORK_TOOLS = {"download_file", "web_fetch", "web_search", "mcp_call_tool", "mcp_read_resource", "mcp_get_prompt"}
 
 
 @dataclass(frozen=True)

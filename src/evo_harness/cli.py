@@ -702,7 +702,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_live_query.add_argument(
         "--provider",
         default=None,
-        help="Provider or profile name. Examples: anthropic, anthropic-compatible, openai-compatible, moonshot",
+        help="Provider or profile name. Examples: anthropic, anthropic-compatible, openai-compatible, moonshot, zhipu",
     )
     run_live_query.add_argument("--model", help="Optional model override.")
     run_live_query.add_argument("--api-key-env", help="Environment variable containing the API key.")

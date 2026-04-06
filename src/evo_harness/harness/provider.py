@@ -101,6 +101,14 @@ PROVIDER_PROFILES: dict[str, ProviderProfile] = {
         default_base_url="https://api.moonshot.cn/v1/chat/completions",
         description="Moonshot / Kimi OpenAI-compatible profile.",
     ),
+    "zhipu": ProviderProfile(
+        name="zhipu",
+        api_format="openai-chat",
+        auth_scheme="bearer",
+        default_api_key_env="ZHIPUAI_API_KEY",
+        default_base_url="https://open.bigmodel.cn/api/paas/v4/chat/completions",
+        description="Zhipu / GLM OpenAI-compatible profile.",
+    ),
 }
 
 
@@ -361,6 +369,8 @@ def detect_provider_profile(
     inferred_profile: ProviderProfile
     if "moonshot" in base or model_name.startswith("kimi"):
         inferred_profile = PROVIDER_PROFILES["moonshot"]
+    elif "bigmodel" in base or "zhipu" in base or model_name.startswith("glm"):
+        inferred_profile = PROVIDER_PROFILES["zhipu"]
     elif "openai" in base or "chat/completions" in base or model_name.startswith(("gpt", "qwen", "deepseek", "glm")):
         inferred_profile = PROVIDER_PROFILES["openai-compatible"]
     elif "vertex" in base or "aiplatform" in base:
@@ -437,6 +447,10 @@ def build_live_provider(
     default_anthropic_key_env = "ANTHROPIC_API_KEY"
     configured_base_url = base_url_override or settings.provider.base_url or resolved_profile.default_base_url
     configured_key_env = api_key_env_override or settings.provider.api_key_env or resolved_profile.default_api_key_env
+    if provider_override is not None and base_url_override is None:
+        configured_base_url = resolved_profile.default_base_url
+    if provider_override is not None and api_key_env_override is None:
+        configured_key_env = resolved_profile.default_api_key_env
     if (
         base_url_override is None
         and configured_base_url == default_anthropic_base
