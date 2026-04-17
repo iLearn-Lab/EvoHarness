@@ -7,6 +7,8 @@ from hashlib import sha1
 from pathlib import Path
 from typing import Any
 
+from evo_harness.harness.messages import render_message_text
+
 
 def get_session_dir(workspace: str | Path) -> Path:
     root = Path(workspace).resolve()
@@ -88,7 +90,7 @@ def export_session_markdown(workspace: str | Path, session_id: str = "latest") -
     parts = ["# Evo Harness Session Transcript"]
     for message in snapshot.get("messages", []):
         role = message.get("role", "unknown").capitalize()
-        text = message.get("text", "")
+        text = render_message_text(dict(message), include_attachment_paths=True)
         parts.append(f"\n## {role}\n")
         parts.append(text)
     path.write_text("\n".join(parts).strip() + "\n", encoding="utf-8")
@@ -183,8 +185,9 @@ def _timestamp_session_id(created_at: float) -> str:
 def _session_summary(messages: list[dict[str, Any]], metadata: dict[str, Any]) -> str:
     for role in ("user", "assistant"):
         for message in messages:
-            if message.get("role") == role and str(message.get("text", "")).strip():
-                return str(message["text"]).strip()[:120]
+            rendered = render_message_text(message, include_attachment_paths=False).strip()
+            if message.get("role") == role and rendered:
+                return rendered[:120]
     active_command = dict(metadata.get("active_command") or {})
     if active_command.get("name"):
         return f"Session under command {active_command['name']}"

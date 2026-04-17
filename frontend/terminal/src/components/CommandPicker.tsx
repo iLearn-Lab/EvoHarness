@@ -24,7 +24,7 @@ function CommandPickerInner({
 					</Text>
 				);
 			})}
-			<Text dimColor>up/down navigate  •  enter select  •  esc dismiss</Text>
+			<Text dimColor>up/down navigate  -  enter select  -  esc dismiss</Text>
 		</Box>
 	);
 }

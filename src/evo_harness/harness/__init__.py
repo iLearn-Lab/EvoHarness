@@ -70,6 +70,7 @@ from .settings import (
     QueryLoopSettings,
     RuntimeSettings,
     SandboxSettings,
+    SearchSettings,
     SafetySettings,
     SubagentSettings,
     UiSettings,
@@ -77,7 +78,7 @@ from .settings import (
     save_settings,
 )
 from .skills import SkillDefinition, load_workspace_skills
-from .stream_events import AssistantTextDelta, AssistantTurnComplete, StreamEvent, ToolExecutionCompleted, ToolExecutionStarted
+from .stream_events import AssistantTextDelta, AssistantTurnComplete, StreamEvent, ToolExecutionCompleted, ToolExecutionProgress, ToolExecutionStarted
 from .subagents import SubagentResult, run_subagent
 from .tasks import TaskManager, TaskRecord, get_task_manager
 from .tools import ToolExecutionContext, ToolRegistry, ToolResult, create_default_tool_registry
@@ -158,6 +159,7 @@ __all__ = [
     "ReactBackendHost",
     "RuntimeSettings",
     "SandboxSettings",
+    "SearchSettings",
     "SafetySettings",
     "SlashCommand",
     "SlashCommandContext",
@@ -173,6 +175,7 @@ __all__ = [
     "ToolExecutionContext",
     "ToolCall",
     "ToolExecutionCompleted",
+    "ToolExecutionProgress",
     "ToolExecutionStarted",
     "ToolRegistry",
     "ToolResult",

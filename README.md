@@ -38,12 +38,12 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-%3E%3D3.11-3776AB?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/React%2BInk-TUI-61DAFB?logo=react&logoColor=white" alt="React Ink TUI">
-  <img src="https://img.shields.io/badge/tools-26-14B8A6" alt="26 tools">
+  <img src="https://img.shields.io/badge/tools-27-14B8A6" alt="27 tools">
   <img src="https://img.shields.io/badge/commands-32-0EA5E9" alt="32 commands">
   <img src="https://img.shields.io/badge/skills-34-06B6D4" alt="34 skills">
   <img src="https://img.shields.io/badge/agents-32-3B82F6" alt="32 agents">
   <img src="https://img.shields.io/badge/plugins-7-F59E0B" alt="7 plugins">
-  <img src="https://img.shields.io/badge/MCP_servers-10-8B5CF6" alt="10 MCP servers">
+  <img src="https://img.shields.io/badge/MCP_servers-11-8B5CF6" alt="11 MCP servers">
   <img src="https://img.shields.io/badge/MCP_tools-29-7C3AED" alt="29 MCP tools">
 </p>
 
@@ -105,12 +105,12 @@ What makes the architecture distinctive:
 
 At the system surface, EvoHarness exposes:
 
-- 🛠️ **26 tools** for files, shell, search, tasks, registry, MCP, and subagents
+- 🛠️ **27 tools** for files, shell, search, tasks, registry, MCP, and subagents
 - 📜 **32 commands** as workflow entry points
 - 🧠 **34 skills** as on-demand procedural guidance
 - 🤖 **32 agents** for bounded delegation
 - 🔌 **7 plugins** for workspace-native ecosystem growth
-- 🛰️ **10 MCP servers / 29 MCP tools** for external tools, resources, and prompts
+- 🛰️ **11 MCP servers / 29 MCP tools** for external tools, resources, and prompts
 
 <p align="center">
   <img src="./.github/assets/evoharness-architecture-pony-guide.png" alt="EvoHarness pony guide to visible surfaces" width="88%">

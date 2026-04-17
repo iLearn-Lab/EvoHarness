@@ -11,7 +11,7 @@ from evo_harness.models import (
     TaskTrace,
     WorkspaceSnapshot,
 )
-from evo_harness.operators.grow_ecosystem import ecosystem_bundle_missing_assets, ecosystem_bundle_name_for_trace
+from evo_harness.operators.grow_ecosystem import ecosystem_bundle_exists, ecosystem_bundle_missing_assets, ecosystem_bundle_name_for_trace
 
 
 class EvolutionPolicy:
@@ -25,6 +25,104 @@ class EvolutionPolicy:
         report: AnalysisReport,
     ) -> EvolutionProposal:
         kinds = {finding.kind for finding in report.findings}
+        requested_operator = str(trace.artifacts.get("requested_operator", "") or "").strip().lower()
+        assessment = dict(trace.artifacts.get("autonomous_evolution_assessment", {}) or {})
+
+        if requested_operator == OperatorName.STOP.value and not bool(assessment.get("needs_evolution", False)):
+            return EvolutionProposal(
+                operator=OperatorName.STOP,
+                reason="The autonomous evaluator decided that this session does not justify a self-evolution step.",
+                confidence=float(assessment.get("confidence", 0.85) or 0.85),
+                required_capabilities=[],
+                change_targets=[],
+                metadata={"risk_score": report.risk_score, "assessment_summary": assessment.get("summary")},
+            )
+
+        if requested_operator == OperatorName.GROW_ECOSYSTEM.value:
+            requested_bundle = str(trace.artifacts.get("bundle_name", "") or "").strip()
+            if requested_bundle and not ecosystem_bundle_exists(requested_bundle):
+                requested_bundle = ""
+            bundle_name = requested_bundle or ecosystem_bundle_name_for_trace(trace, report)
+            missing_bundle_assets = ecosystem_bundle_missing_assets(bundle_name, workspace)
+            if (
+                requested_bundle
+                and not missing_bundle_assets
+                and trace.artifacts.get("capability_gap")
+                and capabilities.supports("artifact_access", "workspace_instructions")
+            ):
+                return EvolutionProposal(
+                    operator=OperatorName.GROW_ECOSYSTEM,
+                    reason=(
+                        "The autonomous evaluator still wants ecosystem growth, but the named bundle is already present. "
+                        "Generate a gap-specific capability extension instead of falling back to a narrower hard-coded revision."
+                    ),
+                    confidence=0.9,
+                    required_capabilities=["artifact_access", "workspace_instructions"],
+                    change_targets=[],
+                    metadata={
+                        "bundle_name": "capability-growth",
+                        "requested_bundle": bundle_name,
+                        "missing_assets": [],
+                        "workspace_skill_count": len(workspace.skill_files),
+                        "workspace_command_count": len(workspace.command_files),
+                        "workspace_agent_count": len(workspace.agent_files),
+                    },
+                )
+            if (bundle_name == "capability-growth" or missing_bundle_assets) and capabilities.supports("artifact_access", "workspace_instructions"):
+                return EvolutionProposal(
+                    operator=OperatorName.GROW_ECOSYSTEM,
+                    reason=(
+                        "The autonomous evaluator judged that this session exposed a persistent capability gap, "
+                        "so the next move should be ecosystem growth rather than another passive memory entry."
+                    ),
+                    confidence=0.9,
+                    required_capabilities=["artifact_access", "workspace_instructions"],
+                    change_targets=missing_bundle_assets,
+                    metadata={
+                        "bundle_name": bundle_name,
+                        "missing_assets": missing_bundle_assets,
+                        "workspace_skill_count": len(workspace.skill_files),
+                        "workspace_command_count": len(workspace.command_files),
+                        "workspace_agent_count": len(workspace.agent_files),
+                    },
+                )
+
+        if (
+            requested_operator == OperatorName.REVISE_COMMAND.value
+            and trace.artifacts.get("active_command_name")
+            and capabilities.supports("slash_commands", "skill_validate", "replay_validation")
+        ):
+            target = str(trace.artifacts.get("active_command_name", "workspace-command"))
+            return EvolutionProposal(
+                operator=OperatorName.REVISE_COMMAND,
+                reason="The autonomous evaluator chose command revision for this session.",
+                confidence=0.88,
+                required_capabilities=["slash_commands", "skill_validate", "replay_validation"],
+                change_targets=[target],
+                metadata={
+                    "active_command_path": trace.artifacts.get("active_command_path"),
+                    "workspace_has_command_workflow": bool(trace.artifacts.get("active_command_name")),
+                },
+            )
+
+        if (
+            requested_operator == OperatorName.REVISE_SKILL.value
+            and capabilities.supports("skill_upgrade", "skill_validate", "replay_validation")
+        ):
+            target = str(trace.artifacts.get("skill_name", _default_skill_target(workspace, trace)))
+            return EvolutionProposal(
+                operator=OperatorName.REVISE_SKILL,
+                reason="The autonomous evaluator chose skill revision for this session.",
+                confidence=0.88,
+                required_capabilities=["skill_upgrade", "skill_validate", "replay_validation"],
+                change_targets=[target],
+                metadata={
+                    "workspace_has_claude_md": bool(workspace.claude_files),
+                    "workspace_skill_count": len(workspace.skill_files),
+                    "workspace_command_count": len(workspace.command_files),
+                    "workspace_agent_count": len(workspace.agent_files),
+                },
+            )
 
         if (
             trace.outcome in {Outcome.FAILURE, Outcome.PARTIAL}
@@ -49,12 +147,14 @@ class EvolutionPolicy:
             )
 
         requested_bundle = str(trace.artifacts.get("bundle_name", "") or "").strip()
+        if requested_bundle and not ecosystem_bundle_exists(requested_bundle):
+            requested_bundle = ""
         bundle_name = requested_bundle or ecosystem_bundle_name_for_trace(trace, report)
         missing_bundle_assets = ecosystem_bundle_missing_assets(bundle_name, workspace)
         if (
             trace.outcome in {Outcome.FAILURE, Outcome.PARTIAL}
-            and {"ecosystem_gap", "provider_gap", "context_pressure"} & kinds
-            and missing_bundle_assets
+            and {"ecosystem_gap", "provider_gap", "context_pressure", "capability_gap"} & kinds
+            and (bundle_name == "capability-growth" or missing_bundle_assets)
             and capabilities.supports("artifact_access", "workspace_instructions")
         ):
             return EvolutionProposal(
@@ -77,7 +177,7 @@ class EvolutionPolicy:
 
         if (
             trace.outcome in {Outcome.FAILURE, Outcome.PARTIAL}
-            and {"skill_gap", "repeated_failure", "ecosystem_gap", "provider_gap", "context_pressure"} & kinds
+            and {"skill_gap", "repeated_failure", "ecosystem_gap", "provider_gap", "context_pressure", "capability_gap"} & kinds
             and capabilities.supports("skill_upgrade", "skill_validate", "replay_validation")
         ):
             target = str(trace.artifacts.get("skill_name", _default_skill_target(workspace, trace)))

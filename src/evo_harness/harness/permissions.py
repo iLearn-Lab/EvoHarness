@@ -8,6 +8,108 @@ from evo_harness.harness.settings import PermissionSettings, SandboxSettings
 
 
 NETWORK_TOOLS = {"download_file", "web_fetch", "web_search", "mcp_call_tool", "mcp_read_resource", "mcp_get_prompt"}
+SAFE_GIT_SUBCOMMANDS = {
+    "status",
+    "diff",
+    "log",
+    "show",
+    "branch",
+    "rev-parse",
+    "grep",
+    "ls-files",
+    "remote",
+    "tag",
+    "blame",
+    "symbolic-ref",
+}
+SAFE_NPM_SUBCOMMANDS = {"test", "run", "exec", "list", "ls"}
+SAFE_PNPM_SUBCOMMANDS = {"test", "run", "exec", "list", "ls"}
+SAFE_YARN_SUBCOMMANDS = {"test", "run", "list", "why"}
+SAFE_CARGO_SUBCOMMANDS = {"test", "check", "fmt", "clippy", "metadata"}
+SAFE_DOTNET_SUBCOMMANDS = {"test", "--info", "--list-sdks", "--version"}
+SAFE_GO_SUBCOMMANDS = {"test", "env", "version", "list"}
+SAFE_MVN_SUBCOMMANDS = {"test", "-v", "--version"}
+SAFE_GRADLE_SUBCOMMANDS = {"test", "tasks", "properties", "--version", "-v"}
+SAFE_SHELL_PREFIXES = (
+    "get-",
+    "select-string",
+    "where-object",
+    "measure-object",
+    "sort-object",
+    "group-object",
+    "format-table",
+    "format-list",
+    "out-string",
+    "get-command",
+    "get-location",
+    "set-location",
+    "push-location",
+    "pop-location",
+    "pwd",
+    "ls",
+    "dir",
+    "cat",
+    "type",
+    "rg",
+    "findstr",
+    "echo",
+    "cls",
+    "clear",
+    "whoami",
+    "hostname",
+    "uname",
+    "env",
+)
+MUTATING_SHELL_MARKERS = (
+    ">>",
+    ">",
+    "set-content",
+    "add-content",
+    "out-file",
+    "new-item",
+    "ni ",
+    "mkdir ",
+    "md ",
+    "remove-item",
+    "del ",
+    "erase ",
+    "copy-item",
+    "move-item",
+    "rename-item",
+    "clear-content",
+    "git add",
+    "git commit",
+    "git apply",
+    "git am",
+    "git stash",
+    "git checkout",
+    "git switch",
+    "git restore",
+    "git clean",
+    "git reset",
+    "git rebase",
+    "git merge",
+    "npm install",
+    "npm update",
+    "npm audit fix",
+    "pnpm add",
+    "pnpm install",
+    "pnpm update",
+    "yarn add",
+    "yarn install",
+    "pip install",
+    "python -m pip install",
+    "uv pip install",
+    "uv sync",
+    "poetry add",
+    "poetry install",
+    "cargo add",
+    "cargo install",
+    "go get",
+    "go mod tidy",
+    "dotnet add",
+    "dotnet restore",
+)
 
 
 @dataclass(frozen=True)
@@ -83,12 +185,12 @@ class PermissionChecker:
         if tool_name in self._settings.allowed_tools:
             return PermissionDecision(allowed=True, reason=f"{tool_name} is explicitly allowed")
 
-        mode = self._settings.mode.lower()
+        mode = normalize_permission_mode(self._settings.mode)
         sandbox_mode = self._sandbox.mode.lower()
-        if mode == "full-auto":
+        if mode == "full-access":
             if sandbox_mode == "read-only" and not is_read_only:
                 return PermissionDecision(allowed=False, reason="Read-only sandbox blocks mutating tools")
-            return PermissionDecision(allowed=True, reason="Full-auto mode allows the action inside sandbox bounds")
+            return PermissionDecision(allowed=True, reason="Full-access mode allows the action inside sandbox bounds")
 
         if is_read_only:
             return PermissionDecision(allowed=True, reason="Read-only actions are allowed")
@@ -153,3 +255,127 @@ class PermissionChecker:
             except ValueError:
                 continue
         return False
+
+
+def normalize_permission_mode(mode: str) -> str:
+    lowered = str(mode or "default").strip().lower().replace("_", "-")
+    aliases = {
+        "auto": "full-access",
+        "full-auto": "full-access",
+        "fullaccess": "full-access",
+        "default": "default",
+        "plan": "plan",
+        "full-access": "full-access",
+    }
+    return aliases.get(lowered, lowered or "default")
+
+
+def is_safe_shell_command(command: str) -> bool:
+    normalized = _normalize_shell_command(command)
+    if not normalized:
+        return False
+    if _contains_mutating_shell_marker(normalized):
+        return False
+    if normalized.startswith(SAFE_SHELL_PREFIXES):
+        return True
+    if _is_safe_git_command(normalized):
+        return True
+    if _is_safe_python_command(normalized):
+        return True
+    if _is_safe_node_command(normalized):
+        return True
+    if _is_safe_toolchain_command(normalized):
+        return True
+    return False
+
+
+def _normalize_shell_command(command: str) -> str:
+    return " ".join(str(command or "").strip().lower().split())
+
+
+def _contains_mutating_shell_marker(command: str) -> bool:
+    for marker in MUTATING_SHELL_MARKERS:
+        if marker == ">":
+            if " > " in command or command.endswith(">") or command.startswith(">"):
+                return True
+            continue
+        if marker in command:
+            return True
+    return False
+
+
+def _is_safe_git_command(command: str) -> bool:
+    if not command.startswith("git "):
+        return False
+    parts = command.split()
+    return len(parts) >= 2 and parts[1] in SAFE_GIT_SUBCOMMANDS
+
+
+def _is_safe_python_command(command: str) -> bool:
+    if command in {"python", "python --version", "python -v", "python -vv"}:
+        return True
+    if command.startswith("python -m "):
+        return command.startswith("python -m unittest") or command.startswith("python -m pytest")
+    if command.startswith("pytest") or command.startswith("py.test"):
+        return True
+    if command.startswith("python -c "):
+        return not any(
+            marker in command
+            for marker in (
+                "write_text",
+                "write_bytes",
+                "unlink",
+                "rmdir",
+                "mkdir",
+                "remove(",
+                "replace(",
+                "rename(",
+                "shutil.",
+                "subprocess.",
+                "open(",
+            )
+        )
+    return False
+
+
+def _is_safe_node_command(command: str) -> bool:
+    if command.startswith("npm "):
+        return _is_safe_package_manager_command(command, "npm", SAFE_NPM_SUBCOMMANDS)
+    if command.startswith("pnpm "):
+        return _is_safe_package_manager_command(command, "pnpm", SAFE_PNPM_SUBCOMMANDS)
+    if command.startswith("yarn "):
+        return _is_safe_package_manager_command(command, "yarn", SAFE_YARN_SUBCOMMANDS)
+    if command.startswith("tsc "):
+        return "--noemit" in command
+    if command.startswith("npx tsc ") or command.startswith("npm exec -- tsc "):
+        return "--noemit" in command
+    return False
+
+
+def _is_safe_package_manager_command(command: str, prefix: str, safe_subcommands: set[str]) -> bool:
+    parts = command.split()
+    if len(parts) < 2 or parts[0] != prefix:
+        return False
+    if parts[1] not in safe_subcommands:
+        return False
+    if parts[1] in {"run", "exec"}:
+        return "test" in parts or ("tsc" in parts and "--noemit" in command)
+    return True
+
+
+def _is_safe_toolchain_command(command: str) -> bool:
+    parts = command.split()
+    if not parts:
+        return False
+    head = parts[0]
+    if head == "cargo":
+        return len(parts) >= 2 and parts[1] in SAFE_CARGO_SUBCOMMANDS
+    if head == "dotnet":
+        return len(parts) >= 2 and parts[1] in SAFE_DOTNET_SUBCOMMANDS
+    if head == "go":
+        return len(parts) >= 2 and parts[1] in SAFE_GO_SUBCOMMANDS
+    if head in {"mvn", "mvn.cmd"}:
+        return len(parts) >= 2 and parts[1] in SAFE_MVN_SUBCOMMANDS
+    if head in {"gradle", ".\\gradlew", "./gradlew"}:
+        return len(parts) >= 2 and parts[1] in SAFE_GRADLE_SUBCOMMANDS
+    return False

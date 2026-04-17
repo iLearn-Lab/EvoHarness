@@ -34,6 +34,10 @@ class ProviderSettings:
     auth_scheme: str = "x-api-key"
     headers: dict[str, str] = field(default_factory=dict)
     anthropic_version: str = "2023-06-01"
+    request_timeout_seconds: int = 120
+    max_retries: int = 4
+    retry_base_delay: float = 2.0
+    retry_max_delay: float = 45.0
     max_turns: int = 8
     max_consecutive_tool_rounds: int = 4
     max_repeated_tool_call_signatures: int = 2
@@ -51,6 +55,8 @@ class QueryLoopSettings:
     max_parallel_tool_calls: int = 4
     max_context_messages: int = 24
     max_context_chars: int = 120000
+    context_compaction_preserve_recent_messages: int = 4
+    context_summary_max_lines: int = 16
     max_repeated_assistant_turns: int = 2
 
 
@@ -122,6 +128,13 @@ class RuntimeSettings:
     autosave_sessions: bool = True
     save_turn_events: bool = True
     max_session_messages: int = 400
+    auto_self_evolution: bool = True
+    auto_self_evolution_mode: str = "auto"
+    auto_self_evolution_require_runtime_signals: bool = True
+    auto_self_evolution_require_task_completion: bool = True
+    auto_self_evolution_apply_fallback_on_completed_tasks: bool = True
+    auto_failure_recovery_on_incomplete: bool = False
+    auto_failure_recovery_max_turns: int = 4
 
 
 @dataclass(slots=True)
@@ -142,6 +155,23 @@ class UiSettings:
 
 
 @dataclass(slots=True)
+class SearchSettings:
+    tavily_api_key: str | None = None
+    tavily_api_key_env: str = "TAVILY_API_KEY"
+    tavily_base_url: str = "https://api.tavily.com/search"
+    fallback_to_exa: bool = True
+    exa_mcp_url: str = "https://mcp.exa.ai/mcp?tools=web_search_exa"
+    exa_api_key: str | None = None
+    exa_api_key_env: str = "EXA_API_KEY"
+    fallback_to_mcp: bool = True
+    fallback_to_builtin: bool = True
+    mcp_server: str | None = None
+    mcp_tool: str | None = None
+    mcp_query_argument: str | None = None
+    mcp_max_results_argument: str | None = None
+
+
+@dataclass(slots=True)
 class HarnessSettings:
     model: str = "claude-sonnet-4"
     max_tokens: int = 16384
@@ -157,6 +187,7 @@ class HarnessSettings:
     runtime: RuntimeSettings = field(default_factory=RuntimeSettings)
     subagents: SubagentSettings = field(default_factory=SubagentSettings)
     ui: UiSettings = field(default_factory=UiSettings)
+    search: SearchSettings = field(default_factory=SearchSettings)
     hooks: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     enabled_plugins: dict[str, bool] = field(default_factory=dict)
     plugin_settings: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -167,6 +198,17 @@ class HarnessSettings:
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
         payload["permission"]["path_rules"] = [asdict(rule) for rule in self.permission.path_rules]
+        return payload
+
+    def to_disk_dict(self) -> dict[str, Any]:
+        payload = self.to_dict()
+        provider = dict(payload.get("provider", {}))
+        provider.pop("api_key", None)
+        payload["provider"] = provider
+        search = dict(payload.get("search", {}))
+        search.pop("tavily_api_key", None)
+        search.pop("exa_api_key", None)
+        payload["search"] = search
         return payload
 
 
@@ -231,6 +273,7 @@ def load_settings(path: str | Path | None = None, *, workspace: str | Path | Non
     runtime_raw = dict(merged.get("runtime", {}))
     subagents_raw = dict(merged.get("subagents", {}))
     ui_raw = dict(merged.get("ui", {}))
+    search_raw = dict(merged.get("search", {}))
 
     permission = _permission_settings_from_raw(permission_raw)
     provider = ProviderSettings(
@@ -244,6 +287,10 @@ def load_settings(path: str | Path | None = None, *, workspace: str | Path | Non
         auth_scheme=str(provider_raw.get("auth_scheme", "x-api-key")),
         headers={str(key): str(value) for key, value in dict(provider_raw.get("headers", {})).items()},
         anthropic_version=str(provider_raw.get("anthropic_version", "2023-06-01")),
+        request_timeout_seconds=int(provider_raw.get("request_timeout_seconds", 120)),
+        max_retries=int(provider_raw.get("max_retries", 4)),
+        retry_base_delay=float(provider_raw.get("retry_base_delay", 2.0)),
+        retry_max_delay=float(provider_raw.get("retry_max_delay", 45.0)),
         max_turns=int(provider_raw.get("max_turns", 8)),
         max_consecutive_tool_rounds=int(provider_raw.get("max_consecutive_tool_rounds", 4)),
         max_repeated_tool_call_signatures=int(provider_raw.get("max_repeated_tool_call_signatures", 2)),
@@ -263,6 +310,8 @@ def load_settings(path: str | Path | None = None, *, workspace: str | Path | Non
         max_parallel_tool_calls=int(query_raw.get("max_parallel_tool_calls", 4)),
         max_context_messages=int(query_raw.get("max_context_messages", 24)),
         max_context_chars=int(query_raw.get("max_context_chars", 120000)),
+        context_compaction_preserve_recent_messages=int(query_raw.get("context_compaction_preserve_recent_messages", 4)),
+        context_summary_max_lines=int(query_raw.get("context_summary_max_lines", 16)),
         max_repeated_assistant_turns=int(query_raw.get("max_repeated_assistant_turns", 2)),
     )
     promotion = PromotionPolicySettings(
@@ -307,6 +356,13 @@ def load_settings(path: str | Path | None = None, *, workspace: str | Path | Non
         autosave_sessions=bool(runtime_raw.get("autosave_sessions", True)),
         save_turn_events=bool(runtime_raw.get("save_turn_events", True)),
         max_session_messages=int(runtime_raw.get("max_session_messages", 400)),
+        auto_self_evolution=bool(runtime_raw.get("auto_self_evolution", True)),
+        auto_self_evolution_mode=str(runtime_raw.get("auto_self_evolution_mode", "auto")),
+        auto_self_evolution_require_runtime_signals=bool(runtime_raw.get("auto_self_evolution_require_runtime_signals", True)),
+        auto_self_evolution_require_task_completion=bool(runtime_raw.get("auto_self_evolution_require_task_completion", True)),
+        auto_self_evolution_apply_fallback_on_completed_tasks=bool(runtime_raw.get("auto_self_evolution_apply_fallback_on_completed_tasks", True)),
+        auto_failure_recovery_on_incomplete=bool(runtime_raw.get("auto_failure_recovery_on_incomplete", False)),
+        auto_failure_recovery_max_turns=int(runtime_raw.get("auto_failure_recovery_max_turns", 4)),
     )
     subagents = SubagentSettings(
         default_model=subagents_raw.get("default_model"),
@@ -320,6 +376,21 @@ def load_settings(path: str | Path | None = None, *, workspace: str | Path | Non
         show_hints=bool(ui_raw.get("show_hints", True)),
         show_query_metrics=bool(ui_raw.get("show_query_metrics", True)),
         dense=bool(ui_raw.get("dense", False)),
+    )
+    search = SearchSettings(
+        tavily_api_key=search_raw.get("tavily_api_key"),
+        tavily_api_key_env=str(search_raw.get("tavily_api_key_env", "TAVILY_API_KEY")),
+        tavily_base_url=str(search_raw.get("tavily_base_url", "https://api.tavily.com/search")),
+        fallback_to_exa=bool(search_raw.get("fallback_to_exa", True)),
+        exa_mcp_url=str(search_raw.get("exa_mcp_url", "https://mcp.exa.ai/mcp?tools=web_search_exa")),
+        exa_api_key=search_raw.get("exa_api_key"),
+        exa_api_key_env=str(search_raw.get("exa_api_key_env", "EXA_API_KEY")),
+        fallback_to_mcp=bool(search_raw.get("fallback_to_mcp", True)),
+        fallback_to_builtin=bool(search_raw.get("fallback_to_builtin", True)),
+        mcp_server=search_raw.get("mcp_server"),
+        mcp_tool=search_raw.get("mcp_tool"),
+        mcp_query_argument=search_raw.get("mcp_query_argument"),
+        mcp_max_results_argument=search_raw.get("mcp_max_results_argument"),
     )
 
     return HarnessSettings(
@@ -337,6 +408,7 @@ def load_settings(path: str | Path | None = None, *, workspace: str | Path | Non
         runtime=runtime,
         subagents=subagents,
         ui=ui,
+        search=search,
         hooks=dict(merged.get("hooks", {})),
         enabled_plugins=dict(merged.get("enabled_plugins", {})),
         plugin_settings=_normalize_plugin_settings(merged.get("plugin_settings", {})),
@@ -404,6 +476,16 @@ def _env_overrides() -> dict[str, Any]:
         "EVO_HARNESS_APPROVAL_MODE": ("approvals", "mode"),
         "EVO_HARNESS_UI_THEME": ("ui", "theme"),
         "EVO_HARNESS_SUBAGENT_MODEL": ("subagents", "default_model"),
+        "EVO_HARNESS_TAVILY_API_KEY": ("search", "tavily_api_key"),
+        "EVO_HARNESS_TAVILY_API_KEY_ENV": ("search", "tavily_api_key_env"),
+        "EVO_HARNESS_TAVILY_BASE_URL": ("search", "tavily_base_url"),
+        "EVO_HARNESS_EXA_MCP_URL": ("search", "exa_mcp_url"),
+        "EVO_HARNESS_EXA_API_KEY": ("search", "exa_api_key"),
+        "EVO_HARNESS_EXA_API_KEY_ENV": ("search", "exa_api_key_env"),
+        "EVO_HARNESS_SEARCH_MCP_SERVER": ("search", "mcp_server"),
+        "EVO_HARNESS_SEARCH_MCP_TOOL": ("search", "mcp_tool"),
+        "EVO_HARNESS_SEARCH_MCP_QUERY_ARGUMENT": ("search", "mcp_query_argument"),
+        "EVO_HARNESS_SEARCH_MCP_MAX_RESULTS_ARGUMENT": ("search", "mcp_max_results_argument"),
     }
     direct_int_overrides = {
         "EVO_HARNESS_MAX_TOKENS": ("max_tokens",),
@@ -418,6 +500,9 @@ def _env_overrides() -> dict[str, Any]:
         "EVO_HARNESS_AUTO_PROMOTE": ("promotion", "allow_auto_promote"),
         "EVO_HARNESS_UI_HINTS": ("ui", "show_hints"),
         "EVO_HARNESS_SANDBOX_ALLOW_NETWORK": ("sandbox", "allow_network"),
+        "EVO_HARNESS_SEARCH_FALLBACK_TO_EXA": ("search", "fallback_to_exa"),
+        "EVO_HARNESS_SEARCH_FALLBACK_TO_MCP": ("search", "fallback_to_mcp"),
+        "EVO_HARNESS_SEARCH_FALLBACK_TO_BUILTIN": ("search", "fallback_to_builtin"),
     }
 
     for env_name, key_path in direct_string_overrides.items():
@@ -508,7 +593,7 @@ def save_settings(settings: HarnessSettings, path: str | Path | None = None) -> 
     settings_path = Path(path) if path else get_default_settings_path()
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     settings_path.write_text(
-        json.dumps(settings.to_dict(), indent=2, ensure_ascii=True) + "\n",
+        json.dumps(settings.to_disk_dict(), indent=2, ensure_ascii=True) + "\n",
         encoding="utf-8",
     )
     return settings_path

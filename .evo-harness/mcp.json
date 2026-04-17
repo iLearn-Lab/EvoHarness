@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "playwright": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@executeautomation/playwright-mcp-server"],
+      "description": "Browser automation with Playwright for navigation, clicking, form filling, and screenshots."
+    },
     "workspace-docs": {
       "transport": "stdio",
       "command": "python",
@@ -11,7 +17,7 @@
       "tools": [
         {
           "name": "search_docs",
-          "description": "Search key local docs such as README, CLAUDE, and feature matrix files."
+          "description": "Search key local docs such as README, README.zh-CN, and CLAUDE."
         }
       ],
       "resources": [
@@ -26,9 +32,9 @@
           "description": "Root workspace instructions and project guidance."
         },
         {
-          "uri": "docs://feature-matrix-zh",
-          "name": "Feature Matrix (zh-CN)",
-          "description": "Chinese feature matrix for harness capabilities."
+          "uri": "docs://readme-zh",
+          "name": "README (zh-CN)",
+          "description": "Chinese repository overview and usage notes."
         }
       ],
       "prompts": [

@@ -164,6 +164,81 @@ class EvolutionProposal:
 
 
 @dataclass(slots=True)
+class AutonomousEvolutionAssessment:
+    needs_evolution: bool
+    operator: str
+    outcome: str
+    confidence: float
+    summary: str
+    error_tags: list[str] = field(default_factory=list)
+    capability_gap: dict[str, Any] | None = None
+    skill_name: str | None = None
+    bundle_name: str | None = None
+    replay_prompt: str | None = None
+    evidence: list[str] = field(default_factory=list)
+    raw_response: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class TaskRequirementGraph:
+    capability_name: str
+    input_objects: list[str] = field(default_factory=list)
+    input_formats: list[str] = field(default_factory=list)
+    environment_targets: list[str] = field(default_factory=list)
+    deliverables: list[str] = field(default_factory=list)
+    workflow_actions: list[str] = field(default_factory=list)
+    requested_surfaces: list[str] = field(default_factory=list)
+    requested_growth_unit: list[str] = field(default_factory=list)
+    domain_tags: list[str] = field(default_factory=list)
+    state_targets: list[str] = field(default_factory=list)
+    operation_specs: list[dict[str, Any]] = field(default_factory=list)
+    reuse_across_sessions: bool = False
+    external_dependencies: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    evidence: list[str] = field(default_factory=list)
+    research_plan: dict[str, Any] = field(default_factory=dict)
+    implementation_contract: dict[str, Any] = field(default_factory=dict)
+    replay_contract: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class CapabilitySurfaceGraph:
+    commands: list[str] = field(default_factory=list)
+    skills: list[str] = field(default_factory=list)
+    agents: list[str] = field(default_factory=list)
+    plugins: list[str] = field(default_factory=list)
+    mcp_servers: list[str] = field(default_factory=list)
+    dependency_markers: list[str] = field(default_factory=list)
+    counts: dict[str, int] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class CapabilityGrowthPlan:
+    capability_name: str
+    capability_slug: str
+    gap_types: list[str] = field(default_factory=list)
+    minimal_growth_unit: list[str] = field(default_factory=list)
+    preferred_surfaces: list[str] = field(default_factory=list)
+    required_assets: list[str] = field(default_factory=list)
+    dependency_hints: list[str] = field(default_factory=list)
+    validation_hints: list[str] = field(default_factory=list)
+    workflow_outline: list[str] = field(default_factory=list)
+    synthesis_notes: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
 class EvolutionPlan:
     trace: TaskTrace
     capabilities: HarnessCapabilities

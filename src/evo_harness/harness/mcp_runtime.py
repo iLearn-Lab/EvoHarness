@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
+import urllib.error
 import urllib.request
 from contextlib import suppress
 from dataclasses import dataclass
@@ -37,6 +39,9 @@ def call_mcp_method(
     server = next((item for item in registry.servers if item.name == server_name), None)
     if server is None:
         raise ValueError(f"MCP server not found: {server_name}")
+    static_payload = _static_registry_payload(server, method=method)
+    if static_payload is not None:
+        return McpCallResult(server=server.name, method=method, payload=static_payload)
     payload = _call_server(server, workspace=workspace_root, method=method, params=params or {})
     return McpCallResult(server=server.name, method=method, payload=payload)
 
@@ -52,6 +57,22 @@ def call_mcp_tool(workspace: str | Path, *, server_name: str, tool_name: str, ar
         method="tools/call",
         params={"name": tool_name, "arguments": arguments},
     ).payload
+
+
+def call_mcp_tool_with_server(
+    workspace: str | Path,
+    *,
+    server: McpServerDefinition,
+    tool_name: str,
+    arguments: dict[str, Any],
+) -> dict[str, Any]:
+    workspace_root = Path(workspace).resolve()
+    return _call_server(
+        server,
+        workspace=workspace_root,
+        method="tools/call",
+        params={"name": tool_name, "arguments": arguments},
+    )
 
 
 def list_mcp_runtime_resources(workspace: str | Path, *, server_name: str) -> dict[str, Any]:
@@ -110,16 +131,30 @@ def _call_stdio_server(
     if not server.command:
         raise ValueError(f"MCP stdio server {server.name} is missing a command")
     env = dict(os.environ)
-    src_dir = workspace / "src"
-    if src_dir.exists():
-        existing_pythonpath = env.get("PYTHONPATH", "")
-        env["PYTHONPATH"] = (
-            f"{src_dir}{os.pathsep}{existing_pythonpath}" if existing_pythonpath else str(src_dir)
-        )
+    pythonpath_entries: list[str] = []
+    current_pythonpath = env.get("PYTHONPATH", "")
+    if current_pythonpath:
+        pythonpath_entries.extend([entry for entry in current_pythonpath.split(os.pathsep) if entry])
+    runtime_src_dir = Path(__file__).resolve().parents[2]
+    if runtime_src_dir.exists():
+        pythonpath_entries.insert(0, str(runtime_src_dir))
+    workspace_src_dir = workspace / "src"
+    if workspace_src_dir.exists():
+        pythonpath_entries.insert(0, str(workspace_src_dir))
+    if pythonpath_entries:
+        deduped: list[str] = []
+        seen: set[str] = set()
+        for entry in pythonpath_entries:
+            if entry in seen:
+                continue
+            seen.add(entry)
+            deduped.append(entry)
+        env["PYTHONPATH"] = os.pathsep.join(deduped)
     env["EVO_HARNESS_WORKSPACE"] = str(workspace)
     env.update(server.env)
+    argv = _resolve_stdio_argv(server)
     process = subprocess.Popen(
-        [server.command, *server.args],
+        argv,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -159,27 +194,78 @@ def _call_stdio_server(
                 process.kill()
 
 
+def _resolve_stdio_argv(server: McpServerDefinition) -> list[str]:
+    if not server.command:
+        raise ValueError(f"MCP stdio server {server.name} is missing a command")
+    command = str(server.command).strip()
+    if not command:
+        raise ValueError(f"MCP stdio server {server.name} is missing a command")
+    resolved = shutil.which(command) or command
+    if os.name == "nt" and Path(resolved).suffix.lower() == ".ps1":
+        return [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            resolved,
+            *server.args,
+        ]
+    return [resolved, *server.args]
+
+
+def _static_registry_payload(server: McpServerDefinition, *, method: str) -> dict[str, Any] | None:
+    if method == "tools/list":
+        return {
+            "tools": [
+                {
+                    "name": item.name,
+                    "description": item.description,
+                    "inputSchema": dict(item.input_schema),
+                }
+                for item in server.tools
+            ]
+        }
+    if method == "resources/list":
+        return {
+            "resources": [
+                {
+                    "uri": item.uri,
+                    "name": item.name,
+                    "description": item.description,
+                    "mimeType": item.mime_type,
+                }
+                for item in server.resources
+            ]
+        }
+    if method == "prompts/list":
+        return {
+            "prompts": [
+                {
+                    "name": item.name,
+                    "description": item.description,
+                    "arguments": list(item.arguments),
+                }
+                for item in server.prompts
+            ]
+        }
+    return None
+
+
 def _call_http_server(server: McpServerDefinition, *, method: str, params: dict[str, Any]) -> dict[str, Any]:
     if not server.url:
         raise ValueError(f"MCP HTTP server {server.name} is missing a URL")
-    request_payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": method,
-        "params": params,
-    }
-    data = json.dumps(request_payload).encode("utf-8")
-    request = urllib.request.Request(
-        server.url,
-        data=data,
-        headers={"content-type": "application/json", **server.headers},
-        method="POST",
+    session = _HttpMcpSession(server)
+    session.request(
+        "initialize",
+        {
+            "protocolVersion": MCP_PROTOCOL_VERSION,
+            "clientInfo": {"name": "evo-harness", "version": "0.1.0"},
+            "capabilities": {},
+        },
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-    if "error" in payload:
-        raise ValueError(f"MCP server returned an error: {payload['error']}")
-    return dict(payload.get("result", {}))
+    session.notify("notifications/initialized", {})
+    return session.request(method, params)
 
 
 class _StdIoMcpSession:
@@ -225,3 +311,91 @@ class _StdIoMcpSession:
         length = int(headers.get("content-length", "0"))
         body = self._process.stdout.read(length)
         return json.loads(body.decode("utf-8"))
+
+
+class _HttpMcpSession:
+    def __init__(self, server: McpServerDefinition) -> None:
+        self._server = server
+        self._next_id = 1
+        self._session_id: str | None = None
+
+    def request(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
+        request_id = self._next_id
+        self._next_id += 1
+        message = self._post(
+            {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "method": method,
+                "params": params,
+            }
+        )
+        if "error" in message:
+            raise ValueError(f"MCP server returned an error: {message['error']}")
+        return dict(message.get("result", {}))
+
+    def notify(self, method: str, params: dict[str, Any]) -> None:
+        self._post(
+            {
+                "jsonrpc": "2.0",
+                "method": method,
+                "params": params,
+            },
+            expect_response=False,
+        )
+
+    def _post(self, payload: dict[str, Any], *, expect_response: bool = True) -> dict[str, Any]:
+        assert self._server.url is not None
+        request_headers = {
+            "content-type": "application/json",
+            "accept": "application/json, text/event-stream",
+            "mcp-protocol-version": MCP_PROTOCOL_VERSION,
+            **self._server.headers,
+        }
+        if self._session_id:
+            request_headers["mcp-session-id"] = self._session_id
+        request = urllib.request.Request(
+            self._server.url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers=request_headers,
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                self._session_id = str(response.headers.get("mcp-session-id", "") or self._session_id or "") or None
+                body = response.read().decode("utf-8", errors="replace")
+                content_type = str(response.headers.get("content-type", "") or "").lower()
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise ValueError(detail or f"HTTP Error {exc.code}") from exc
+        except urllib.error.URLError as exc:
+            raise ValueError(str(exc)) from exc
+
+        if not body.strip():
+            return {}
+        if "text/event-stream" in content_type:
+            return _parse_sse_jsonrpc_response(body)
+        message = json.loads(body)
+        if not isinstance(message, dict):
+            raise ValueError(f"Unexpected MCP HTTP response payload: {message!r}")
+        if not expect_response and "id" not in message:
+            return {}
+        return message
+
+
+def _parse_sse_jsonrpc_response(body: str) -> dict[str, Any]:
+    events = body.replace("\r\n", "\n").split("\n\n")
+    for event in events:
+        data_lines: list[str] = []
+        for line in event.splitlines():
+            if line.startswith("data:"):
+                data_lines.append(line[5:].lstrip())
+        if not data_lines:
+            continue
+        payload = "\n".join(data_lines).strip()
+        if not payload:
+            continue
+        message = json.loads(payload)
+        if isinstance(message, dict):
+            return message
+    raise ValueError("MCP server returned an empty SSE response")

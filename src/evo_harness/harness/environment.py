@@ -50,6 +50,8 @@ def _get_git_status(cwd: Path) -> tuple[bool, str | None]:
             check=False,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         )
         if result.returncode != 0 or result.stdout.strip().lower() != "true":
             return False, None
@@ -59,8 +61,9 @@ def _get_git_status(cwd: Path) -> tuple[bool, str | None]:
             check=False,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         )
         return True, branch.stdout.strip() or None
     except OSError:
         return False, None
-

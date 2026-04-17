@@ -40,6 +40,7 @@ def discover_workspace(root: str | Path) -> WorkspaceSnapshot:
         ".openharness/skills/*.md",
         ".claude/skills/*.md",
         "skills/*.md",
+        "plugins/*/skills/*.md",
     ):
         for path in sorted(resolved.glob(pattern)):
             skill_files.append(str(path))
@@ -48,6 +49,7 @@ def discover_workspace(root: str | Path) -> WorkspaceSnapshot:
         ".claude/commands/*.md",
         ".openharness/commands/*.md",
         "commands/*.md",
+        "plugins/*/commands/*.md",
     ):
         for path in sorted(resolved.glob(pattern)):
             command_files.append(str(path))
@@ -56,6 +58,7 @@ def discover_workspace(root: str | Path) -> WorkspaceSnapshot:
         ".claude/agents/*.md",
         ".openharness/agents/*.md",
         "agents/*.md",
+        "plugins/*/agents/*.md",
     ):
         for path in sorted(resolved.glob(pattern)):
             agent_files.append(str(path))
@@ -64,6 +67,7 @@ def discover_workspace(root: str | Path) -> WorkspaceSnapshot:
         ".openharness/hooks/*.json",
         ".claude/hooks/*.json",
         "hooks/*.json",
+        "plugins/*/hooks/*.json",
     ):
         for path in sorted(resolved.glob(pattern)):
             hook_files.append(str(path))

@@ -17,10 +17,16 @@ def _repo_root() -> Path:
 
 def _doc_sources() -> dict[str, tuple[str, Path]]:
     root = _repo_root()
+    candidates = [
+        ("docs://readme", "README", root / "README.md"),
+        ("docs://readme-zh", "README (zh-CN)", root / "README.zh-CN.md"),
+        ("docs://claude", "CLAUDE", root / "CLAUDE.md"),
+        ("docs://feature-matrix-zh", "Feature Matrix (zh-CN)", root / "docs" / "feature-matrix.zh-CN.md"),
+    ]
     return {
-        "docs://readme": ("README", root / "README.md"),
-        "docs://claude": ("CLAUDE", root / "CLAUDE.md"),
-        "docs://feature-matrix-zh": ("Feature Matrix (zh-CN)", root / "docs" / "feature-matrix.zh-CN.md"),
+        uri: (label, path)
+        for uri, label, path in candidates
+        if path.exists()
     }
 
 

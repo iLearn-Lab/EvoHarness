@@ -38,6 +38,7 @@ class ConversationEngine:
         self,
         *,
         prompt: str,
+        attachments: list[dict[str, object]] | None = None,
         provider: BaseProvider,
         command_name: str | None = None,
         command_arguments: str = "",
@@ -46,6 +47,7 @@ class ConversationEngine:
         return run_query(
             self.runtime,
             prompt=prompt,
+            attachments=attachments,
             provider=provider,
             command_name=command_name,
             command_arguments=command_arguments,
@@ -56,6 +58,7 @@ class ConversationEngine:
         self,
         *,
         prompt: str,
+        attachments: list[dict[str, object]] | None = None,
         provider: BaseProvider,
         command_name: str | None = None,
         command_arguments: str = "",
@@ -64,6 +67,7 @@ class ConversationEngine:
         return run_query_stream(
             self.runtime,
             prompt=prompt,
+            attachments=attachments,
             provider=provider,
             command_name=command_name,
             command_arguments=command_arguments,

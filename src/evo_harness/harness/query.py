@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import queue
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any
 
+from evo_harness.harness.context_window import ContextWindowPolicy, message_window_text, prepare_messages_for_provider
 from evo_harness.harness.messages import ChatMessage
 from evo_harness.harness.provider import BaseProvider
 from evo_harness.harness.runtime import HarnessRuntime, RuntimeEvent
@@ -13,6 +15,7 @@ from evo_harness.harness.stream_events import (
     AssistantTextDelta,
     AssistantTurnComplete,
     ToolExecutionCompleted,
+    ToolExecutionProgress,
     ToolExecutionStarted,
 )
 
@@ -33,6 +36,7 @@ def run_query(
     runtime: HarnessRuntime,
     *,
     prompt: str,
+    attachments: list[dict[str, Any]] | None = None,
     provider: BaseProvider,
     command_name: str | None = None,
     command_arguments: str = "",
@@ -41,6 +45,7 @@ def run_query(
     runner = _QueryRunner(
         runtime,
         prompt=prompt,
+        attachments=attachments,
         provider=provider,
         command_name=command_name,
         command_arguments=command_arguments,
@@ -53,6 +58,7 @@ def run_query_stream(
     runtime: HarnessRuntime,
     *,
     prompt: str,
+    attachments: list[dict[str, Any]] | None = None,
     provider: BaseProvider,
     command_name: str | None = None,
     command_arguments: str = "",
@@ -61,6 +67,7 @@ def run_query_stream(
     runner = _QueryRunner(
         runtime,
         prompt=prompt,
+        attachments=attachments,
         provider=provider,
         command_name=command_name,
         command_arguments=command_arguments,
@@ -75,6 +82,7 @@ class _QueryRunner:
         runtime: HarnessRuntime,
         *,
         prompt: str,
+        attachments: list[dict[str, Any]] | None,
         provider: BaseProvider,
         command_name: str | None,
         command_arguments: str,
@@ -82,6 +90,7 @@ class _QueryRunner:
     ) -> None:
         self.runtime = runtime
         self.prompt = prompt
+        self.attachments = [dict(item) for item in list(attachments or [])]
         self.provider = provider
         self.command_name = command_name
         self.command_arguments = command_arguments
@@ -147,7 +156,7 @@ class _QueryRunner:
                 turn = self._next_turn(turn_index)
                 for event in self._assistant_stream_events(turn, turn_index):
                     yield event
-                for event in self._execute_tool_calls(turn.tool_calls, emit_stream=True):
+                for event in self._execute_tool_calls_stream(turn.tool_calls):
                     yield event
                 if self._should_stop_after_turn(turn):
                     break
@@ -173,8 +182,14 @@ class _QueryRunner:
             {"prompt": self.prompt, "provider": self.provider.name},
             cwd=self.runtime.workspace,
         )
-        self.runtime.messages.append(ChatMessage(role="user", text=self.prompt).to_dict())
-        self.events.append(RuntimeEvent(kind="user_message", payload={"text": self.prompt}))
+        user_message = ChatMessage(role="user", text=self.prompt, attachments=self.attachments)
+        self.runtime.messages.append(user_message.to_dict())
+        self.events.append(
+            RuntimeEvent(
+                kind="user_message",
+                payload={"text": self.prompt, "attachments": [dict(item) for item in self.attachments]},
+            )
+        )
         self._started = True
 
     def _next_turn(self, turn_index: int):
@@ -183,6 +198,8 @@ class _QueryRunner:
             self.runtime.messages,
             max_messages=self.query_settings.max_context_messages,
             max_chars=self.query_settings.max_context_chars,
+            preserve_recent_messages=self.query_settings.context_compaction_preserve_recent_messages,
+            summary_max_lines=self.query_settings.context_summary_max_lines,
         )
         if window_event is not None:
             if window_event["reason"] == "conversation_compacted":
@@ -329,6 +346,90 @@ class _QueryRunner:
             stream_events.extend(self._execute_tool_calls_sequential(states, emit_stream=emit_stream))
         return stream_events
 
+    def _execute_tool_calls_stream(self, tool_calls):
+        if not tool_calls:
+            return
+
+        states = [
+            {
+                "call": tool_call,
+                "is_mutating": _is_mutating_tool(self.runtime, tool_call.name, tool_call.arguments),
+                "parallel_safe": _is_parallel_safe_tool(self.runtime, tool_call.name),
+            }
+            for tool_call in tool_calls
+        ]
+        for state in states:
+            if state["is_mutating"]:
+                self.query_stats["mutating_tool_calls"] += 1
+
+        can_parallelize = (
+            len(states) > 1
+            and self.query_settings.max_parallel_tool_calls > 1
+            and all(not state["is_mutating"] for state in states)
+            and all(state["parallel_safe"] for state in states)
+        )
+        if can_parallelize:
+            for event in self._execute_tool_calls_parallel(states, emit_stream=True):
+                yield event
+            return
+
+        for state in states:
+            tool_call = state["call"]
+            yield ToolExecutionStarted(
+                tool_name=tool_call.name,
+                tool_input=dict(tool_call.arguments),
+                tool_call_id=tool_call.id,
+            )
+            progress_queue: queue.Queue[dict[str, Any]] = queue.Queue()
+
+            def _progress_callback(payload: dict[str, Any]) -> None:
+                progress_queue.put(dict(payload))
+
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(
+                    self.runtime.execute_tool,
+                    tool_call.name,
+                    tool_call.arguments,
+                    tool_call_id=tool_call.id,
+                    progress_callback=_progress_callback,
+                )
+                while True:
+                    try:
+                        progress = progress_queue.get(timeout=0.1)
+                        text = str(progress.get("text", "") or "").strip()
+                        if text:
+                            yield ToolExecutionProgress(
+                                tool_name=tool_call.name,
+                                output=text,
+                                stream=str(progress.get("stream", "stdout") or "stdout"),
+                                tool_call_id=tool_call.id,
+                            )
+                    except queue.Empty:
+                        if future.done():
+                            break
+                while not progress_queue.empty():
+                    progress = progress_queue.get_nowait()
+                    text = str(progress.get("text", "") or "").strip()
+                    if text:
+                        yield ToolExecutionProgress(
+                            tool_name=tool_call.name,
+                            output=text,
+                            stream=str(progress.get("stream", "stdout") or "stdout"),
+                            tool_call_id=tool_call.id,
+                        )
+                result = future.result()
+
+            self._record_tool_result(tool_call, result, is_mutating=state["is_mutating"])
+            yield ToolExecutionCompleted(
+                tool_name=tool_call.name,
+                output=str(result.output),
+                is_error=bool(result.is_error),
+                tool_call_id=tool_call.id,
+                metadata=dict(result.metadata),
+            )
+            if self._tool_limits_exceeded():
+                break
+
     def _execute_tool_calls_sequential(self, states, *, emit_stream: bool) -> list[object]:
         stream_events: list[object] = []
         for state in states:
@@ -380,7 +481,10 @@ class _QueryRunner:
             future_map = {}
             for index, state in enumerate(states):
                 tool_call = state["call"]
-                subruntime = self.runtime.create_subruntime(tool_allowlist=[tool_call.name])
+                # Keep the full registry visible inside read-only parallel tool executions.
+                # Introspection tools such as workspace_status and list_registry need the real
+                # workspace surface, not a single-tool sandbox created only for dispatch.
+                subruntime = self.runtime.create_subruntime()
                 future = executor.submit(
                     subruntime.execute_tool,
                     tool_call.name,
@@ -524,6 +628,16 @@ class _QueryRunner:
                         "tool_history": [record.to_dict() for record in self.runtime.tool_history],
                         "active_command": self.runtime.active_command.to_dict() if self.runtime.active_command else None,
                         "active_command_arguments": self.runtime.active_command_arguments,
+                        "provider_config": {
+                            "model": self.runtime.settings.model,
+                            "provider": self.runtime.settings.provider.provider,
+                            "profile": self.runtime.settings.provider.profile,
+                            "api_format": self.runtime.settings.provider.api_format,
+                            "api_key_env": self.runtime.settings.provider.api_key_env,
+                            "base_url": self.runtime.settings.provider.base_url,
+                            "auth_scheme": self.runtime.settings.provider.auth_scheme,
+                            "headers": dict(self.runtime.settings.provider.headers),
+                        },
                         "query_stats": self.query_stats,
                         "stop_reason": self.final_stop_reason,
                         "turn_count": self.turn_count,
@@ -542,6 +656,35 @@ class _QueryRunner:
             stop_reason=self.final_stop_reason,
             turn_count=self.turn_count,
         )
+        if self.runtime.settings.runtime.auto_self_evolution:
+            try:
+                from evo_harness.autonomous_evolution import (
+                    run_autonomous_self_evolution,
+                    write_autonomous_failure_record,
+                )
+
+                run_autonomous_self_evolution(
+                    self.runtime.workspace,
+                    settings=self.runtime.settings,
+                    provider=_clone_provider(self.provider),
+                    session_id="latest",
+                    mode=self.runtime.settings.runtime.auto_self_evolution_mode,
+                )
+            except Exception as exc:
+                try:
+                    write_autonomous_failure_record(
+                        self.runtime.workspace,
+                        session_id="latest",
+                        error=str(exc),
+                    )
+                except Exception:
+                    pass
+                self.events.append(
+                    RuntimeEvent(
+                        kind="autonomous_evolution_failed",
+                        payload={"error": str(exc)},
+                    )
+                )
         self.runtime.last_query_result = result
         return result
 
@@ -567,227 +710,18 @@ def _messages_for_provider(
     *,
     max_messages: int,
     max_chars: int,
+    preserve_recent_messages: int = 4,
+    summary_max_lines: int = 16,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
-    selected_units = _message_units(messages)
-    selected = _flatten_units(selected_units)
-    if len(selected) <= max_messages and _messages_char_count(selected) <= max_chars:
-        return _provider_safe_messages(selected)
-
-    preserve_recent = max(2, min(4, max_messages // 4 if max_messages > 0 else 2))
-    compacted_units, compact_payload = _compact_message_units_for_context(
-        selected_units,
-        preserve_recent=preserve_recent,
+    return prepare_messages_for_provider(
+        messages,
+        policy=ContextWindowPolicy(
+            max_messages=max_messages,
+            max_chars=max_chars,
+            preserve_recent_messages=preserve_recent_messages,
+            summary_max_lines=summary_max_lines,
+        ),
     )
-    selected_units = compacted_units
-    selected = _flatten_units(selected_units)
-    if len(selected) <= max_messages and _messages_char_count(selected) <= max_chars:
-        return _provider_safe_messages(selected, compact_payload)
-
-    truncation_payload: dict[str, Any] | None = compact_payload
-    if len(selected) > max_messages:
-        before = len(selected)
-        selected_units = _take_recent_units_by_message_budget(selected_units, max_messages=max_messages)
-        selected = _flatten_units(selected_units)
-        truncation_payload = {
-            "reason": "max_context_messages",
-            "removed_messages": before - len(selected),
-            "kept_messages": len(selected),
-            "after_compaction": compact_payload is not None,
-        }
-
-    total_chars = _messages_char_count(selected)
-    if total_chars > max_chars:
-        before = len(selected)
-        selected_units = _take_recent_units_by_char_budget(selected_units, max_chars=max_chars)
-        selected = _flatten_units(selected_units)
-        truncation_payload = {
-            "reason": "max_context_chars",
-            "removed_messages": before - len(selected),
-            "kept_messages": len(selected),
-            "kept_chars": _messages_char_count(selected),
-            "after_compaction": compact_payload is not None,
-        }
-    return _provider_safe_messages(selected, truncation_payload)
-
-
-def _compact_message_units_for_context(
-    units: list[list[dict[str, Any]]],
-    *,
-    preserve_recent: int,
-) -> tuple[list[list[dict[str, Any]]], dict[str, Any] | None]:
-    if len(units) <= preserve_recent:
-        return [list(unit) for unit in units], None
-
-    older_units = units[:-preserve_recent]
-    newer_units = units[-preserve_recent:]
-    older = _flatten_units(older_units)
-    summary = _summarize_messages(older)
-    if not summary:
-        return [list(unit) for unit in newer_units], None
-
-    summary_unit = [ChatMessage(
-        role="assistant",
-        text=f"[conversation summary]\n{summary}",
-        metadata={"kind": "conversation_summary"},
-    ).to_dict()]
-    payload = {
-        "reason": "conversation_compacted",
-        "removed_messages": len(older),
-        "kept_messages": len(_flatten_units(newer_units)) + 1,
-        "summary_chars": len(summary),
-    }
-    return [summary_unit, *[list(unit) for unit in newer_units]], payload
-
-
-def _summarize_messages(messages: Iterable[dict[str, Any]], *, max_lines: int = 16) -> str:
-    lines: list[str] = []
-    for message in messages:
-        role = str(message.get("role", "unknown"))
-        text = str(message.get("text", "")).strip()
-        if not text and role == "tool":
-            tool_name = message.get("tool_name") or "tool"
-            text = f"{tool_name}: {str(message.get('text', '')).strip()}"
-        if not text:
-            continue
-        lines.append(f"{role}: {text[:240]}")
-        if len(lines) >= max_lines:
-            break
-    return "\n".join(lines)
-
-
-def _messages_char_count(messages: list[dict[str, Any]]) -> int:
-    return sum(len(str(message.get("text", ""))) for message in messages)
-
-
-def _message_units(messages: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
-    units: list[list[dict[str, Any]]] = []
-    index = 0
-    while index < len(messages):
-        message = messages[index]
-        role = str(message.get("role", ""))
-        tool_calls = list(message.get("tool_calls", []) or [])
-        if role == "assistant" and tool_calls:
-            call_ids = {str(call.get("id", "")) for call in tool_calls if str(call.get("id", ""))}
-            unit = [message]
-            index += 1
-            while index < len(messages):
-                candidate = messages[index]
-                if str(candidate.get("role", "")) != "tool":
-                    break
-                metadata = dict(candidate.get("metadata", {}) or {})
-                tool_call_id = str(metadata.get("tool_call_id", "") or "")
-                if tool_call_id and tool_call_id in call_ids:
-                    unit.append(candidate)
-                    index += 1
-                    continue
-                break
-            units.append(unit)
-            continue
-        units.append([message])
-        index += 1
-    return units
-
-
-def _flatten_units(units: Iterable[list[dict[str, Any]]]) -> list[dict[str, Any]]:
-    flattened: list[dict[str, Any]] = []
-    for unit in units:
-        flattened.extend(unit)
-    return flattened
-
-
-def _take_recent_units_by_message_budget(
-    units: list[list[dict[str, Any]]],
-    *,
-    max_messages: int,
-) -> list[list[dict[str, Any]]]:
-    kept: list[list[dict[str, Any]]] = []
-    running_messages = 0
-    for unit in reversed(units):
-        unit_count = len(unit)
-        if kept and running_messages + unit_count > max_messages:
-            break
-        if not kept and unit_count > max_messages:
-            kept.append([_summary_message_for_unit(unit, kind="message_budget_summary")])
-            break
-        kept.append(unit)
-        running_messages += unit_count
-    kept.reverse()
-    return kept or [[_summary_message_for_unit(_flatten_units(units[-1:]), kind="message_budget_summary")]]
-
-
-def _take_recent_units_by_char_budget(
-    units: list[list[dict[str, Any]]],
-    *,
-    max_chars: int,
-) -> list[list[dict[str, Any]]]:
-    kept: list[list[dict[str, Any]]] = []
-    running_chars = 0
-    for unit in reversed(units):
-        unit_chars = _messages_char_count(unit)
-        if kept and running_chars + unit_chars > max_chars:
-            break
-        if not kept and unit_chars > max_chars:
-            kept.append([_summary_message_for_unit(unit, kind="char_budget_summary")])
-            break
-        kept.append(unit)
-        running_chars += unit_chars
-    kept.reverse()
-    return kept or [[_summary_message_for_unit(_flatten_units(units[-1:]), kind="char_budget_summary")]]
-
-
-def _summary_message_for_unit(unit: Iterable[dict[str, Any]], *, kind: str) -> dict[str, Any]:
-    summary = _summarize_messages(list(unit), max_lines=8) or "Recent tool-heavy context was compacted to fit the provider window."
-    return ChatMessage(
-        role="assistant",
-        text=f"[conversation summary]\n{summary}",
-        metadata={"kind": kind},
-    ).to_dict()
-
-
-def _provider_safe_messages(
-    messages: list[dict[str, Any]],
-    payload: dict[str, Any] | None = None,
-) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
-    sanitized: list[dict[str, Any]] = []
-    dropped_orphans: list[dict[str, Any]] = []
-    active_tool_call_ids: set[str] = set()
-
-    for message in messages:
-        role = str(message.get("role", ""))
-        if role == "assistant":
-            sanitized.append(message)
-            active_tool_call_ids = {
-                str(call.get("id", ""))
-                for call in list(message.get("tool_calls", []) or [])
-                if str(call.get("id", ""))
-            }
-            continue
-        if role == "tool":
-            metadata = dict(message.get("metadata", {}) or {})
-            tool_call_id = str(metadata.get("tool_call_id", "") or "")
-            if tool_call_id and tool_call_id in active_tool_call_ids:
-                sanitized.append(message)
-            else:
-                dropped_orphans.append(message)
-            continue
-        active_tool_call_ids = set()
-        sanitized.append(message)
-
-    event_payload = dict(payload or {})
-    if dropped_orphans:
-        note = ChatMessage(
-            role="assistant",
-            text=(
-                "[compatibility note]\n"
-                "Older tool results were compacted to keep the provider request valid."
-            ),
-            metadata={"kind": "compatibility_note"},
-        ).to_dict()
-        sanitized = [note, *sanitized] if sanitized else [note]
-        event_payload["dropped_orphan_tool_messages"] = len(dropped_orphans)
-        if "reason" not in event_payload:
-            event_payload["reason"] = "provider_window_sanitized"
-    return sanitized, (event_payload or None)
 
 
 def _build_synthesis_instruction(
@@ -800,7 +734,7 @@ def _build_synthesis_instruction(
     recent_user = ""
     for message in reversed(messages):
         if message.get("role") == "user":
-            recent_user = str(message.get("text", "")).strip()
+            recent_user = message_window_text(message).strip()
             if recent_user:
                 break
     recent_tools = [record.tool_name for record in tool_history[-6:]]

@@ -279,7 +279,7 @@ def _build_doctor_report(workspace: str | Path, *, settings_path: str | Path | N
     if len(runtime.list_tools()) < 15:
         warnings.append("Tool registry is still relatively small for a full coding harness.")
     if runtime.settings.permission.mode == "default":
-        notes.append("Permission mode is default, so mutating tools will be blocked without confirmation.")
+        notes.append("Permission mode is default, so mutating tools still require confirmation while common safe shell reads can run directly.")
     if not plugins:
         notes.append("No enabled plugins are loaded. Plugin settings and marketplace flows may be underused.")
     if not mcp_servers:
@@ -402,6 +402,11 @@ def _print_query_text_stream(
         if event_name == "AssistantTextDelta":
             print(event.text, end="", flush=True)
             saw_text = True
+        elif event_name == "ToolExecutionProgress":
+            if saw_text:
+                print()
+                saw_text = False
+            print(f"[{event.tool_name} {event.stream}] {event.output}", flush=True)
         elif event_name == "AssistantTurnComplete" and saw_text:
             print()
     if saw_text:
@@ -468,6 +473,20 @@ def _print_query_stream_json(
                 ),
                 flush=True,
             )
+        elif name == "ToolExecutionProgress":
+            print(
+                json.dumps(
+                    {
+                        "type": "tool_progress",
+                        "tool_name": event.tool_name,
+                        "stream": event.stream,
+                        "output": event.output,
+                        "tool_call_id": event.tool_call_id,
+                    },
+                    ensure_ascii=False,
+                ),
+                flush=True,
+            )
     result = engine.runtime.last_query_result
     if result is not None:
         print(json.dumps({"type": "result", **_query_result_payload(result)}, ensure_ascii=False), flush=True)
@@ -510,7 +529,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--workspace", help="Workspace root for default chat/prompt mode.")
     parser.add_argument("--settings", help="Optional settings.json path for default chat/prompt mode.")
     parser.add_argument("--provider-script", help="Scripted provider for default chat/prompt mode.")
-    parser.add_argument("--resume", default="latest", help="Session ID to resume in default chat mode.")
+    parser.add_argument("--resume", default="none", help="Session ID to resume in default chat mode. Defaults to a new session.")
     parser.add_argument("--backend-only", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--text-ui", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument(
@@ -593,7 +612,7 @@ def build_parser() -> argparse.ArgumentParser:
     chat_cmd.add_argument("--workspace", required=True, help="Workspace root to inspect.")
     chat_cmd.add_argument("--settings", help="Optional settings.json path.")
     chat_cmd.add_argument("--provider-script", help="Path to a scripted provider JSON file.")
-    chat_cmd.add_argument("--resume", default="latest", help="Session ID to resume or 'none'.")
+    chat_cmd.add_argument("--resume", default="none", help="Session ID to resume or 'none'. Defaults to a new session.")
 
     ui_cmd = subparsers.add_parser("ui", help="Launch the terminal home UI.")
     ui_cmd.add_argument("--workspace", required=True, help="Workspace root to inspect.")

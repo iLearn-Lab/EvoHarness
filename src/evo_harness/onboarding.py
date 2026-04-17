@@ -276,6 +276,13 @@ def _starter_settings(
             "cache_approved_actions": True,
             "cache_denied_actions": True,
         },
+        "runtime": {
+            "auto_self_evolution": True,
+            "auto_self_evolution_mode": "auto",
+            "auto_self_evolution_require_runtime_signals": True,
+            "auto_self_evolution_require_task_completion": True,
+            "auto_self_evolution_apply_fallback_on_completed_tasks": True,
+        },
         "permission": {
             "mode": "default",
             "allowed_tools": [],

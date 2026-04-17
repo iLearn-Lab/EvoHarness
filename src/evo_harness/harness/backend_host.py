@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
 
+from evo_harness.harness.attachments import discard_attachment, import_attachment_file
 from evo_harness.harness.conversation import ConversationEngine
 from evo_harness.harness.provider import ScriptedProvider, build_live_provider
 from evo_harness.harness.runtime import HarnessRuntime
@@ -38,6 +39,7 @@ class ReactBackendHost:
         self.registry = create_default_slash_command_registry()
         self._write_lock = threading.Lock()
         self._running = True
+        self._staged_attachments: dict[str, dict[str, object]] = {}
         self.runtime.approval_prompt = self._ask_permission
 
     def run(self) -> int:
@@ -55,13 +57,29 @@ class ReactBackendHost:
                 if request_type == "list_sessions":
                     self._emit_select_request()
                     continue
+                if request_type == "import_attachment":
+                    self._handle_import_attachment(request)
+                    continue
+                if request_type == "discard_attachment":
+                    self._handle_discard_attachment(request)
+                    continue
+                if request_type == "submit_message":
+                    text = str(request.get("text", "") or "")
+                    attachments = [dict(item) for item in list(request.get("attachments", []) or []) if isinstance(item, dict)]
+                    if not text.strip() and not attachments:
+                        continue
+                    keep_running = self._handle_message(text=text, attachments=attachments)
+                    if not keep_running:
+                        self._emit({"type": "shutdown"})
+                        break
+                    continue
                 if request_type != "submit_line":
                     self._emit({"type": "error", "message": f"Unknown request type: {request_type}"})
                     continue
                 line = str(request.get("line", "")).strip()
                 if not line:
                     continue
-                keep_running = self._handle_line(line)
+                keep_running = self._handle_message(text=line, attachments=[])
                 if not keep_running:
                     self._emit({"type": "shutdown"})
                     break
@@ -96,8 +114,21 @@ class ReactBackendHost:
             }
         )
 
-    def _handle_line(self, line: str) -> bool:
-        self._emit({"type": "transcript_item", "item": {"role": "user", "text": line}})
+    def _handle_message(self, *, text: str, attachments: list[dict[str, object]]) -> bool:
+        line = text.strip()
+        resolved_attachments = self._resolve_attachments(attachments)
+        if resolved_attachments and line.startswith("/"):
+            self._emit({"type": "error", "message": "Attachments are only supported for normal chat turns, not slash commands."})
+            self._emit({"type": "line_complete"})
+            return True
+
+        if line or resolved_attachments:
+            self._emit(
+                {
+                    "type": "transcript_item",
+                    "item": {"role": "user", "text": line, "attachments": resolved_attachments},
+                }
+            )
         if line.startswith("/"):
             result = self.registry.dispatch(
                 line,
@@ -109,6 +140,24 @@ class ReactBackendHost:
                 return True
             if result.clear_screen:
                 self._emit({"type": "clear_transcript"})
+            if line.startswith("/resume") and result.message and result.message.startswith("Resumed session"):
+                self._emit(
+                    {
+                        "type": "transcript_reset",
+                        "items": [
+                            {
+                                "role": str(item.get("role", "system")),
+                                "text": str(item.get("text", "")),
+                                **({"tool_name": item.get("tool_name")} if item.get("tool_name") else {}),
+                                **({"is_error": item.get("is_error")} if "is_error" in item else {}),
+                                **({"attachments": item.get("attachments", [])} if item.get("attachments") else {}),
+                                **({"metadata": item.get("metadata", {})} if item.get("metadata") else {}),
+                                **({"tool_calls": item.get("tool_calls", [])} if item.get("tool_calls") else {}),
+                            }
+                            for item in self.runtime.messages
+                        ],
+                    }
+                )
             if result.message:
                 self._emit({"type": "transcript_item", "item": {"role": "system", "text": result.message}})
             self._emit_snapshots()
@@ -134,7 +183,7 @@ class ReactBackendHost:
             self._emit({"type": "line_complete"})
             return True
         try:
-            for event in self.engine.submit_stream(prompt=line, provider=provider):
+            for event in self.engine.submit_stream(prompt=line, attachments=resolved_attachments, provider=provider):
                 event_name = event.__class__.__name__
                 if event_name == "AssistantTextDelta":
                     self._emit({"type": "assistant_delta", "message": event.text})
@@ -158,6 +207,18 @@ class ReactBackendHost:
                                 "text": self._tool_summary(event.tool_name, event.tool_input),
                                 "tool_name": event.tool_name,
                                 "tool_input": event.tool_input,
+                            },
+                        }
+                    )
+                elif event_name == "ToolExecutionProgress":
+                    stream_name = str(getattr(event, "stream", "stdout") or "stdout")
+                    self._emit(
+                        {
+                            "type": "transcript_item",
+                            "item": {
+                                "role": "log",
+                                "text": f"[{event.tool_name} {stream_name}] {event.output}",
+                                "tool_name": event.tool_name,
                             },
                         }
                     )
@@ -192,6 +253,36 @@ class ReactBackendHost:
         self._emit({"type": "line_complete"})
         return True
 
+    def _handle_import_attachment(self, request: dict[str, object]) -> None:
+        source_path = str(request.get("source_path", "") or "").strip()
+        if not source_path:
+            self._emit({"type": "error", "message": "Attachment import requires source_path."})
+            return
+        try:
+            attachment = import_attachment_file(
+                workspace=self.runtime.workspace,
+                source_path=source_path,
+                mime_type=str(request.get("mime_type", "") or "").strip() or None,
+                file_name=str(request.get("file_name", "") or "").strip() or None,
+                source=str(request.get("source", "") or "").strip() or None,
+                delete_source=bool(request.get("delete_source", False)),
+            )
+        except Exception as exc:
+            self._emit({"type": "error", "message": f"Attachment import failed: {exc}"})
+            return
+        attachment_id = str(attachment.get("id", "") or "")
+        if attachment_id:
+            self._staged_attachments[attachment_id] = attachment
+        self._emit({"type": "attachment_added", "attachment": attachment})
+
+    def _handle_discard_attachment(self, request: dict[str, object]) -> None:
+        attachment_id = str(request.get("attachment_id", "") or "").strip()
+        if not attachment_id:
+            return
+        attachment = self._staged_attachments.pop(attachment_id, None)
+        if attachment is not None:
+            discard_attachment(attachment)
+
     def _emit_snapshots(self) -> None:
         self._emit({"type": "state_snapshot", "state": self._state_payload()})
         self._emit({"type": "tasks_snapshot", "tasks": self._tasks_payload()})
@@ -205,6 +296,8 @@ class ReactBackendHost:
             "cwd": str(self.runtime.workspace),
             "provider": profile,
             "permission_mode": self.runtime.settings.permission.mode,
+            "auto_self_evolution_enabled": bool(self.runtime.settings.runtime.auto_self_evolution),
+            "auto_self_evolution_mode": str(self.runtime.settings.runtime.auto_self_evolution_mode or "off"),
             "input_tokens": int(usage.get("input_tokens", 0) or 0),
             "output_tokens": int(usage.get("output_tokens", 0) or 0),
             "mcp_connected": len(self.runtime.list_mcp_servers()),
@@ -245,6 +338,24 @@ class ReactBackendHost:
         with self._write_lock:
             sys.stdout.write(PROTOCOL_PREFIX + json.dumps(payload, ensure_ascii=False) + "\n")
             sys.stdout.flush()
+
+    def _resolve_attachments(self, attachments: list[dict[str, object]]) -> list[dict[str, object]]:
+        resolved: list[dict[str, object]] = []
+        used_ids: list[str] = []
+        for attachment in attachments:
+            attachment_id = str(attachment.get("id", "") or "").strip()
+            resolved_attachment = dict(self._staged_attachments.get(attachment_id, attachment))
+            path_text = str(resolved_attachment.get("path", "") or "").strip()
+            if not path_text:
+                continue
+            if not Path(path_text).exists():
+                continue
+            resolved.append(resolved_attachment)
+            if attachment_id and attachment_id in self._staged_attachments:
+                used_ids.append(attachment_id)
+        for attachment_id in used_ids:
+            self._staged_attachments.pop(attachment_id, None)
+        return resolved
 
     def _active_provider(self):
         if self.config.provider_script:
@@ -333,6 +444,9 @@ class ReactBackendHost:
 
     def _shutdown_io(self) -> None:
         self._running = False
+        for attachment in list(self._staged_attachments.values()):
+            discard_attachment(attachment)
+        self._staged_attachments.clear()
         with contextlib.suppress(Exception):
             sys.stdin.close()
 

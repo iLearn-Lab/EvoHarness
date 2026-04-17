@@ -12,6 +12,7 @@ from evo_harness.execution import (
     rollback_execution,
     write_execution_record,
 )
+from evo_harness.autonomous_evolution import assess_saved_session, run_autonomous_self_evolution
 from evo_harness.harness.approvals import ApprovalManager
 from evo_harness.harness.commands import load_workspace_commands
 from evo_harness.harness.conversation import ConversationEngine
@@ -23,7 +24,7 @@ from evo_harness.harness.memory import (
     list_memory_entries,
     remove_memory_entry,
 )
-from evo_harness.harness.permissions import PermissionChecker
+from evo_harness.harness.permissions import PermissionChecker, normalize_permission_mode
 from evo_harness.harness.plugins import discover_plugin_paths, load_workspace_plugins
 from evo_harness.harness.provider import PROVIDER_PROFILES, build_live_provider, detect_provider_profile
 from evo_harness.harness.runtime import HarnessRuntime
@@ -32,7 +33,6 @@ from evo_harness.harness.settings import load_settings, save_settings
 from evo_harness.harness.skills import load_workspace_skills
 from evo_harness.harness.subagents import run_subagent
 from evo_harness.harness.tasks import get_task_manager
-from evo_harness.models import HarnessCapabilities
 
 
 @dataclass(slots=True)
@@ -182,13 +182,15 @@ def create_default_slash_command_registry() -> SlashCommandRegistry:
             return SlashCommandResult(message="Login cancelled.")
         runtime.settings.provider.api_key = api_key
         _save_runtime_settings(runtime)
-        return SlashCommandResult(message="Saved API key in workspace settings.")
+        return SlashCommandResult(
+            message="Saved API key for the current session. Workspace settings keep only the API key env name."
+        )
 
     def _logout_handler(_: str, context: SlashCommandContext) -> SlashCommandResult:
         runtime = context.runtime
         runtime.settings.provider.api_key = None
         _save_runtime_settings(runtime)
-        return SlashCommandResult(message="Cleared saved API key from workspace settings.")
+        return SlashCommandResult(message="Cleared the in-session API key. Workspace settings no longer contain an inline secret.")
 
     def _setup_handler(_: str, context: SlashCommandContext) -> SlashCommandResult:
         runtime = context.runtime
@@ -255,14 +257,49 @@ def create_default_slash_command_registry() -> SlashCommandRegistry:
             return SlashCommandResult(
                 message=f"Permission mode: {runtime.settings.permission.mode}\nPending approvals: {pending}"
             )
-        normalized = args.strip().lower().replace("_", "-")
-        aliases = {"auto": "full-auto", "default": "default", "plan": "plan", "full-auto": "full-auto"}
-        mode = aliases.get(normalized)
-        if mode is None:
-            return SlashCommandResult(message="Usage: /permissions [default|plan|full-auto]")
+        mode = normalize_permission_mode(args.strip())
+        if mode not in {"default", "plan", "full-access"}:
+            return SlashCommandResult(message="Usage: /permissions [default|plan|full-access]")
         runtime.settings.permission.mode = mode
         _save_runtime_settings(runtime)
         return SlashCommandResult(message=f"Updated permission mode to {mode}")
+
+    def _evo_mode_handler(args: str, context: SlashCommandContext) -> SlashCommandResult:
+        runtime = context.runtime
+        current_mode = (
+            str(runtime.settings.runtime.auto_self_evolution_mode or "off").strip().lower()
+            if runtime.settings.runtime.auto_self_evolution
+            else "off"
+        )
+        if not args:
+            return SlashCommandResult(
+                message=(
+                    f"Evolution mode: {current_mode}\n"
+                    f"Auto self-evolution enabled: {'yes' if runtime.settings.runtime.auto_self_evolution else 'no'}"
+                )
+            )
+
+        mode = args.strip().lower().replace("_", "-")
+        aliases = {
+            "off": "off",
+            "candidate": "candidate",
+            "auto": "auto",
+            "apply": "apply",
+            "promote": "promote",
+        }
+        normalized = aliases.get(mode)
+        if normalized is None:
+            return SlashCommandResult(message="Usage: /evo-mode [off|candidate|auto|apply|promote]")
+
+        runtime.settings.runtime.auto_self_evolution = normalized != "off"
+        runtime.settings.runtime.auto_self_evolution_mode = normalized
+        _save_runtime_settings(runtime)
+        return SlashCommandResult(
+            message=(
+                f"Updated evolution mode to {normalized}\n"
+                f"Auto self-evolution enabled: {'yes' if runtime.settings.runtime.auto_self_evolution else 'no'}"
+            )
+        )
 
     def _approvals_handler(args: str, context: SlashCommandContext) -> SlashCommandResult:
         runtime = context.runtime
@@ -590,14 +627,18 @@ def create_default_slash_command_registry() -> SlashCommandRegistry:
         runtime = context.runtime
         tokens = args.split()
         action = tokens[0].lower() if tokens else "plan"
-        capabilities = _default_evolution_capabilities()
+        capabilities = runtime.evolution_capabilities()
         try:
             if action == "plan":
-                plan = plan_from_saved_session(runtime.workspace, capabilities=capabilities)
+                assessment = _try_autonomous_assessment(runtime)
+                plan = plan_from_saved_session(runtime.workspace, capabilities=capabilities, assessment=assessment)
                 payload = {
                     "operator": plan.proposal.operator,
                     "safe_to_apply": plan.safe_to_apply,
                     "reason": plan.proposal.reason,
+                    "autonomous_assessment": assessment.to_dict() if assessment is not None else None,
+                    "bundle_name": plan.change_request.get("bundle_name"),
+                    "change_targets": plan.proposal.change_targets,
                     "preferred_path": plan.change_request.get("preferred_path"),
                     "target_memory": plan.change_request.get("target_memory"),
                     "risk_score": plan.report.risk_score,
@@ -605,20 +646,24 @@ def create_default_slash_command_registry() -> SlashCommandRegistry:
                 return SlashCommandResult(message=json.dumps(payload, indent=2, ensure_ascii=False))
 
             if action in {"candidate", "apply", "promote", "auto"}:
-                plan = plan_from_saved_session(runtime.workspace, capabilities=capabilities)
+                assessment = _try_autonomous_assessment(runtime)
+                plan = plan_from_saved_session(runtime.workspace, capabilities=capabilities, assessment=assessment)
                 allow_unvalidated = "force" in {item.lower() for item in tokens[1:]}
                 execution = ControlledEvolutionExecutor().execute(
                     plan,
                     workspace_root=runtime.workspace,
                     mode=action,
-                    run_validation=False,
+                    run_validation=action in {"apply", "promote", "auto"},
                     allow_unvalidated_promotion=allow_unvalidated,
                 )
                 record_path = write_execution_record(runtime.workspace, plan=plan, execution=execution)
                 payload = {
                     "mode": action,
+                    "operator": plan.proposal.operator,
                     "success": execution.success,
                     "promotion_state": execution.promotion_state,
+                    "autonomous_assessment": assessment.to_dict() if assessment is not None else None,
+                    "bundle_name": plan.change_request.get("bundle_name"),
                     "created_paths": execution.created_paths,
                     "applied_paths": execution.applied_paths,
                     "record_path": str(record_path),
@@ -655,6 +700,7 @@ def create_default_slash_command_registry() -> SlashCommandRegistry:
     registry.register(SlashCommand("provider", "Show or update the current provider profile", _provider_handler))
     registry.register(SlashCommand("setup", "Interactive provider setup", _setup_handler))
     registry.register(SlashCommand("permissions", "Show or update permission mode", _permissions_handler))
+    registry.register(SlashCommand("evo-mode", "Show or update auto self-evolution mode", _evo_mode_handler))
     registry.register(SlashCommand("approvals", "List or decide queued approvals", _approvals_handler))
     registry.register(SlashCommand("sessions", "List saved sessions", _sessions_handler))
     registry.register(SlashCommand("resume", "Resume a saved session", _resume_handler))
@@ -688,7 +734,7 @@ def format_session_banner(runtime: HarnessRuntime) -> str:
         "=" * 78,
         f"Evo Harness  |  workspace: {workspace_name}",
         "type a request to send it, or use slash commands to steer the session",
-        "/help  /setup  /login  /resume  /model  /provider  /permissions  /config  /plugins  /exit",
+        "/help  /setup  /login  /resume  /model  /provider  /permissions  /evo-mode  /config  /plugins  /exit",
         "-" * 78,
         f"model: {runtime.settings.model} | provider: {profile.name} | mode: {runtime.settings.permission.mode} | command: {active_command}",
         f"sessions: {len(list_session_snapshots(runtime.workspace, limit=20))} | approvals: {len(runtime.list_approvals(status='pending'))}",
@@ -728,9 +774,15 @@ def _activate_workspace_command(
 
 
 def _save_runtime_settings(runtime: HarnessRuntime) -> None:
+    provider_api_key = runtime.settings.provider.api_key
+    tavily_api_key = runtime.settings.search.tavily_api_key
+    exa_api_key = runtime.settings.search.exa_api_key
     path = runtime.settings_path or (Path(runtime.workspace).resolve() / ".evo-harness" / "settings.json")
     save_settings(runtime.settings, path)
     _reload_runtime_state(runtime)
+    runtime.settings.provider.api_key = provider_api_key
+    runtime.settings.search.tavily_api_key = tavily_api_key
+    runtime.settings.search.exa_api_key = exa_api_key
 
 
 def _reload_runtime_state(runtime: HarnessRuntime) -> None:
@@ -868,21 +920,15 @@ def _find_plugin_manifest(plugin_dir: Path) -> Path | None:
     return None
 
 
-def _default_evolution_capabilities() -> HarnessCapabilities:
-    return HarnessCapabilities(
-        adapter_name="openharness",
-        skill_upgrade=True,
-        skill_validate=True,
-        skill_rollback=True,
-        memory_write=True,
-        memory_archive=True,
-        session_fork=True,
-        replay_validation=True,
-        regression_suite=True,
-        artifact_access=True,
-        execution_history=True,
-        workspace_instructions=True,
-    )
+def _try_autonomous_assessment(runtime: HarnessRuntime):
+    try:
+        provider = build_live_provider(settings=runtime.settings)
+    except Exception:
+        return None
+    try:
+        return assess_saved_session(runtime.workspace, settings=runtime.settings, provider=provider)
+    except Exception:
+        return None
 
 
 def _coerce_value(raw_value: str, current):

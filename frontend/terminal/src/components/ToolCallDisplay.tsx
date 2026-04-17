@@ -3,6 +3,10 @@ import {Box, Text} from 'ink';
 
 import type {TranscriptItem} from '../types.js';
 
+const READ_FILE_PREVIEW_LINES = 10;
+const GENERIC_MAX_LINES = 80;
+const GENERIC_MAX_CHARS = 8000;
+
 type SubagentPayload = {
 	agent_name?: string;
 	summary?: string;
@@ -13,15 +17,7 @@ type SubagentPayload = {
 	model_name?: string | null;
 };
 
-export function ToolCallDisplay({
-	item,
-	expanded = false,
-	highlightExpandable = false,
-}: {
-	item: TranscriptItem;
-	expanded?: boolean;
-	highlightExpandable?: boolean;
-}): React.JSX.Element {
+export function ToolCallDisplay({item}: {item: TranscriptItem}): React.JSX.Element {
 	if (item.role === 'tool') {
 		const toolName = item.tool_name ?? 'tool';
 		const summary = summarizeInput(toolName, item.tool_input, item.text);
@@ -40,32 +36,20 @@ export function ToolCallDisplay({
 		if (subagent) {
 			return <SubagentResultCard payload={subagent} isError={Boolean(item.is_error)} />;
 		}
+
 		const badges = buildMetadataBadges(item.metadata);
-		const collapsed = isExpandableToolResult(item) && !expanded;
-		const lines = item.text.split('\n');
-		const visibleLines = collapsed ? lines.slice(0, 4) : lines.slice(0, 18);
-		const hiddenCount = Math.max(0, lines.length - visibleLines.length);
+		const displayText = formatToolResultForUi(item);
 		return (
 			<Box marginTop={1} marginLeft={2} flexDirection="column" borderStyle="round" borderColor={item.is_error ? 'red' : 'green'} paddingX={1}>
 				<Text color={item.is_error ? 'red' : 'green'} bold>
 					{item.is_error ? 'tool error' : 'tool result'}  ::  {item.tool_name ?? ''}
 				</Text>
 				{badges ? <Text dimColor>{badges}</Text> : null}
-				{collapsed ? (
-					<Text dimColor>
-						{highlightExpandable ? '[>] latest result folded  ::  press right arrow to expand' : '[>] folded result'}
-					</Text>
-				) : null}
-				{visibleLines.map((line, index) => (
-					<Text key={index} color={item.is_error ? 'red' : undefined} dimColor={!item.is_error}>
-						{compactLine(line)}
-					</Text>
-				))}
-				{hiddenCount > 0 ? (
-					<Text dimColor>
-						{expanded ? `[v] expanded  ::  ${hiddenCount} more lines still hidden` : `[>] ${hiddenCount} more lines hidden`}
-					</Text>
-				) : null}
+				{displayText ? (
+					<Text color={item.is_error ? 'red' : undefined}>{displayText}</Text>
+				) : (
+					<Text dimColor>(no output)</Text>
+				)}
 			</Box>
 		);
 	}
@@ -88,7 +72,7 @@ function SubagentResultCard({
 		payload.model_name ? `model ${payload.model_name}` : '',
 	]
 		.filter(Boolean)
-		.join('  •  ');
+		.join('  -  ');
 
 	return (
 		<Box marginTop={1} marginLeft={2} flexDirection="column" borderStyle="round" borderColor={isError ? 'red' : 'magenta'} paddingX={1}>
@@ -106,6 +90,7 @@ function parseSubagentPayload(item: TranscriptItem): SubagentPayload | null {
 	if (item.tool_name !== 'run_subagent') {
 		return null;
 	}
+
 	try {
 		const parsed = JSON.parse(item.text) as SubagentPayload;
 		return typeof parsed === 'object' && parsed ? parsed : null;
@@ -118,29 +103,32 @@ function summarizeInput(toolName: string, toolInput?: Record<string, unknown>, f
 	if (!toolInput) {
 		return fallback?.slice(0, 100) ?? '';
 	}
+
 	const lower = toolName.toLowerCase();
 	if (lower === 'bash' && toolInput.command) {
 		return String(toolInput.command).slice(0, 140);
 	}
 	if (lower === 'run_subagent' && toolInput.name) {
-		return `${String(toolInput.name)} • ${String(toolInput.task ?? '').slice(0, 90)}`;
+		return `${String(toolInput.name)} :: ${String(toolInput.task ?? '').slice(0, 90)}`;
 	}
 	if (toolInput.path) {
 		const segment = toolInput.segment;
 		if (segment !== undefined) {
-			return `${String(toolInput.path)} • segment ${String(segment)}`;
+			return `${String(toolInput.path)} :: segment ${String(segment)}`;
 		}
 		return String(toolInput.path);
 	}
 	if (toolInput.pattern) {
 		const offset = toolInput.offset;
-		return offset !== undefined ? `${String(toolInput.pattern)} • offset ${String(offset)}` : String(toolInput.pattern);
+		return offset !== undefined ? `${String(toolInput.pattern)} :: offset ${String(offset)}` : String(toolInput.pattern);
 	}
+
 	const entries = Object.entries(toolInput);
 	if (entries.length > 0) {
 		const [key, value] = entries[0];
 		return `${key}=${String(value).slice(0, 80)}`;
 	}
+
 	return fallback?.slice(0, 100) ?? '';
 }
 
@@ -148,6 +136,7 @@ function buildMetadataBadges(metadata?: Record<string, unknown>): string {
 	if (!metadata) {
 		return '';
 	}
+
 	const badges: string[] = [];
 	if (Boolean(metadata.segmented)) {
 		if (typeof metadata.segment_index === 'number' && typeof metadata.segment_count === 'number') {
@@ -165,20 +154,94 @@ function buildMetadataBadges(metadata?: Record<string, unknown>): string {
 	if (typeof metadata.next_offset === 'number') {
 		badges.push(`next offset ${metadata.next_offset}`);
 	}
-	return badges.join('  •  ');
+
+	return badges.join('  -  ');
 }
 
-function compactLine(line: string): string {
-	if (line.length <= 180) {
-		return line;
+function formatToolResultForUi(item: TranscriptItem): string {
+	if (!item.text) {
+		return '';
 	}
-	return `${line.slice(0, 177)}...`;
+
+	if (!item.is_error && item.tool_name === 'read_file') {
+		return compactReadFileOutput(item);
+	}
+
+	return compactGenericOutput(item.text);
 }
 
-function isExpandableToolResult(item: TranscriptItem): boolean {
-	if (item.role !== 'tool_result' || item.tool_name === 'run_subagent') {
-		return false;
+function compactReadFileOutput(item: TranscriptItem): string {
+	const metadata = item.metadata ?? {};
+	const {summary, content} = splitFileView(item.text);
+	const contentLines = content ? content.split('\n') : [];
+	const shouldCompact = contentLines.length > READ_FILE_PREVIEW_LINES || item.text.length > GENERIC_MAX_CHARS;
+	if (!shouldCompact) {
+		return item.text;
 	}
-	const lines = item.text.split('\n');
-	return lines.length > 6 || item.text.length > 260;
+
+	const preview = contentLines.slice(0, READ_FILE_PREVIEW_LINES).join('\n').trimEnd();
+	const hiddenLines = Math.max(0, contentLines.length - READ_FILE_PREVIEW_LINES);
+	const path = typeof metadata.path === 'string' ? metadata.path : '';
+	const range = buildSelectedRange(metadata);
+	const summaryLines = [
+		'[file view compacted for UI]',
+		path ? `path: ${path}` : '',
+		range ? `selected: ${range}` : '',
+		summary ? summary.replace('[file summary]\n', '') : '',
+	]
+		.filter(Boolean)
+		.join('\n');
+
+	return [
+		summaryLines,
+		'',
+		'[file content preview]',
+		preview || '(empty preview)',
+		hiddenLines > 0 ? `... ${hiddenLines} more selected lines hidden in UI; the model still received the tool output.` : '',
+	]
+		.filter(Boolean)
+		.join('\n');
+}
+
+function compactGenericOutput(text: string): string {
+	const lines = text.split('\n');
+	if (lines.length <= GENERIC_MAX_LINES && text.length <= GENERIC_MAX_CHARS) {
+		return text;
+	}
+
+	const previewLines = lines.slice(0, GENERIC_MAX_LINES);
+	const preview = previewLines.join('\n');
+	const hiddenLines = Math.max(0, lines.length - previewLines.length);
+	const hiddenChars = Math.max(0, text.length - preview.length);
+	return [
+		'[tool output compacted for UI]',
+		preview,
+		`... hidden in UI: ${hiddenLines} lines, ${hiddenChars} chars. The model still received the tool output.`,
+	].join('\n');
+}
+
+function splitFileView(text: string): {summary: string; content: string} {
+	const marker = '\n[file content]\n';
+	const markerIndex = text.indexOf(marker);
+	if (markerIndex < 0) {
+		return {summary: '', content: text};
+	}
+	return {
+		summary: text.slice(0, markerIndex).trim(),
+		content: text.slice(markerIndex + marker.length),
+	};
+}
+
+function buildSelectedRange(metadata: Record<string, unknown>): string {
+	const start = typeof metadata.segment_start_line === 'number' ? metadata.segment_start_line : undefined;
+	const end = typeof metadata.segment_end_line === 'number' ? metadata.segment_end_line : undefined;
+	const segment = typeof metadata.segment_index === 'number' ? metadata.segment_index : undefined;
+	const segmentCount = typeof metadata.segment_count === 'number' ? metadata.segment_count : undefined;
+	if (segment && segmentCount && start && end) {
+		return `segment ${segment}/${segmentCount}, lines ${start}-${end}`;
+	}
+	if (start && end) {
+		return `lines ${start}-${end}`;
+	}
+	return '';
 }

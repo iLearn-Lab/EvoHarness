@@ -4,7 +4,7 @@ import json
 import sys
 from typing import Any
 
-from evo_harness.harness.web_research import fetch_page_text, format_web_search_results, search_web
+from evo_harness.harness.web_research import fetch_page_text, run_web_search
 
 
 PROTOCOL_VERSION = "2025-06-18"
@@ -22,7 +22,7 @@ def _handle_method(method: str, params: dict[str, Any]) -> dict[str, Any]:
 			"tools": [
 				{
 					"name": "search_web",
-					"description": "Search the public web and return compact top results.",
+					"description": "Search the public web. Uses Tavily when TAVILY_API_KEY is set, otherwise falls back to configured MCP search.",
 					"inputSchema": {
 						"type": "object",
 						"properties": {
@@ -53,10 +53,15 @@ def _handle_method(method: str, params: dict[str, Any]) -> dict[str, Any]:
 		arguments = dict(params.get("arguments", {}) or {})
 		if name == "search_web":
 			query = str(arguments.get("query", "")).strip()
-			results = search_web(query, max_results=int(arguments.get("max_results", 5)))
+			response = run_web_search(query, max_results=int(arguments.get("max_results", 5)))
 			return {
-				"content": [{"type": "text", "text": format_web_search_results(query, results)}],
-				"metadata": {"query": query, "result_count": len(results)},
+				"content": [{"type": "text", "text": response.formatted_text}],
+				"metadata": {
+					"query": query,
+					"result_count": len(response.results),
+					"provider": response.provider,
+					**dict(response.metadata),
+				},
 			}
 		if name == "fetch_page":
 			url = str(arguments.get("url", "")).strip()

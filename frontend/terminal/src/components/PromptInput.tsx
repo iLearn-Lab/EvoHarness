@@ -2,6 +2,8 @@ import React from 'react';
 import {Box, Text} from 'ink';
 import TextInput from 'ink-text-input';
 
+import {formatAttachmentLabel} from '../attachmentUtils.js';
+import type {AttachmentPayload} from '../types.js';
 import {Spinner} from './Spinner.js';
 
 const noop = (): void => {};
@@ -9,21 +11,23 @@ const noop = (): void => {};
 export function PromptInput({
 	busy,
 	input,
+	pendingAttachments,
+	pastingImage,
+	pasteError,
 	setInput,
 	onSubmit,
 	toolName,
 	suppressSubmit,
-	hasExpandableResult,
-	resultExpanded,
 }: {
 	busy: boolean;
 	input: string;
+	pendingAttachments: AttachmentPayload[];
+	pastingImage?: boolean;
+	pasteError?: string | null;
 	setInput: (value: string) => void;
 	onSubmit: (value: string) => void;
 	toolName?: string;
 	suppressSubmit?: boolean;
-	hasExpandableResult?: boolean;
-	resultExpanded?: boolean;
 }): React.JSX.Element {
 	if (busy) {
 		return (
@@ -35,15 +39,24 @@ export function PromptInput({
 
 	return (
 		<Box flexDirection="column" marginTop={1} borderStyle="round" borderColor="cyan" paddingX={1}>
-			<Text color="gray">compose  ::  say it cleanly \(^o^)/</Text>
+			<Text color="gray">compose :: native terminal scrollback is on :: say it cleanly (^o^)/</Text>
+			{pendingAttachments.length > 0 ? (
+				<Box flexDirection="column" marginBottom={1}>
+					<Text color="cyan">attachments</Text>
+					{pendingAttachments.map((attachment, index) => (
+						<Text key={attachment.id} dimColor>{formatAttachmentLabel(attachment, index + 1)}</Text>
+					))}
+				</Box>
+			) : null}
+			{pastingImage ? <Text color="yellow">capturing clipboard image...</Text> : null}
+			{pasteError ? <Text color="red">{pasteError}</Text> : null}
 			<Box>
 				<Text color="cyan" bold>{'>> '}</Text>
-				<TextInput value={input} onChange={setInput} onSubmit={suppressSubmit ? noop : onSubmit} />
+				<TextInput value={input} focus={true} onChange={setInput} onSubmit={suppressSubmit ? noop : onSubmit} />
 			</Box>
 			<Text dimColor>
-				enter send  •  up/down history  •  tab complete slash commands
-				{hasExpandableResult ? `  •  ${resultExpanded ? 'left fold latest result' : 'right expand latest result'}` : ''}
-				{'  •  page up/down scroll transcript'}
+				enter send  ::  ctrl+p/ctrl+n history  ::  tab complete slash commands  ::  use mouse wheel or terminal scrollback to browse history
+				{'  ::  ctrl+v or alt+v paste image  ::  backspace remove last image  ::  /evo-mode'}
 			</Text>
 		</Box>
 	);

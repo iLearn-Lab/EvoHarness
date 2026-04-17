@@ -1,6 +1,7 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Box, useApp, useInput, useStdout} from 'ink';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {Box, useApp, useInput} from 'ink';
 
+import {captureClipboardImage} from './clipboard.js';
 import {CommandPicker} from './components/CommandPicker.js';
 import {ConversationView} from './components/ConversationView.js';
 import {ModalHost} from './components/ModalHost.js';
@@ -8,13 +9,23 @@ import {PromptInput} from './components/PromptInput.js';
 import {SelectModal, type SelectOption} from './components/SelectModal.js';
 import {StatusBar} from './components/StatusBar.js';
 import {useBackendSession} from './hooks/useBackendSession.js';
-import type {FrontendConfig, TranscriptItem} from './types.js';
+import type {FrontendConfig} from './types.js';
 
 const PERMISSION_MODES: SelectOption[] = [
-	{value: 'default', label: 'Default', description: 'Ask before write/execute operations'},
-	{value: 'full-auto', label: 'Auto', description: 'Allow all tools automatically'},
+	{value: 'default', label: 'Default', description: 'Ask before write or execute operations'},
+	{value: 'full-access', label: 'Full Access', description: 'Allow broader shell and mutating actions automatically'},
 	{value: 'plan', label: 'Plan Mode', description: 'Block write operations'},
 ];
+
+const EVOLUTION_MODES: SelectOption[] = [
+	{value: 'off', label: 'Off', description: 'Do not auto-run self-evolution after a session'},
+	{value: 'candidate', label: 'Candidate', description: 'Generate candidates only, do not mutate the workspace'},
+	{value: 'auto', label: 'Auto', description: 'Let the executor decide how far to advance the evolution'},
+	{value: 'apply', label: 'Apply', description: 'Write changes into the workspace automatically'},
+	{value: 'promote', label: 'Promote', description: 'Write and treat the result as a promoted evolution'},
+];
+
+const ALT_SEQUENCE_WINDOW_MS = 80;
 
 type SelectModalState = {
 	title: string;
@@ -24,7 +35,6 @@ type SelectModalState = {
 
 export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 	const {exit} = useApp();
-	const {stdout} = useStdout();
 	const [input, setInput] = useState('');
 	const [modalInput, setModalInput] = useState('');
 	const [history, setHistory] = useState<string[]>([]);
@@ -32,13 +42,39 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 	const [pickerIndex, setPickerIndex] = useState(0);
 	const [selectModal, setSelectModal] = useState<SelectModalState>(null);
 	const [selectIndex, setSelectIndex] = useState(0);
-	const [expandedResultIds, setExpandedResultIds] = useState<string[]>([]);
-	const [messageOffset, setMessageOffset] = useState(0);
-	const [terminalSize, setTerminalSize] = useState({
-		columns: stdout.columns ?? 100,
-		rows: stdout.rows ?? 40,
-	});
+	const [pastingImage, setPastingImage] = useState(false);
+	const [pasteError, setPasteError] = useState<string | null>(null);
+	const pendingEscapeActionRef = useRef<(() => void) | null>(null);
+	const pendingEscapeTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const suppressShortcutTextRef = useRef(false);
 	const session = useBackendSession(config, () => exit());
+
+	const clearPendingEscapeAction = (): void => {
+		if (pendingEscapeTimerRef.current) {
+			clearTimeout(pendingEscapeTimerRef.current);
+			pendingEscapeTimerRef.current = null;
+		}
+		pendingEscapeActionRef.current = null;
+	};
+
+	const scheduleEscapeAction = (action: () => void): void => {
+		clearPendingEscapeAction();
+		pendingEscapeActionRef.current = action;
+		pendingEscapeTimerRef.current = setTimeout(() => {
+			const pending = pendingEscapeActionRef.current;
+			clearPendingEscapeAction();
+			pending?.();
+		}, ALT_SEQUENCE_WINDOW_MS);
+	};
+
+	const flushPendingEscapeAction = (): void => {
+		const pending = pendingEscapeActionRef.current;
+		if (!pending) {
+			return;
+		}
+		clearPendingEscapeAction();
+		pending();
+	};
 
 	const currentToolName = useMemo(() => {
 		for (let index = session.transcript.length - 1; index >= 0; index--) {
@@ -58,66 +94,28 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 		if (!value.startsWith('/') || value === '/') {
 			return [] as string[];
 		}
-		return session.commands.filter((command) => command.startsWith(value)).slice(0, 10);
+		const localCommands = ['/permissions', '/evo-mode', '/resume'];
+		const merged = [...new Set([...localCommands, ...session.commands])];
+		return merged.filter((command) => command.startsWith(value)).slice(0, 10);
 	}, [session.commands, input]);
 
 	const showPicker = commandHints.length > 0 && !session.busy && !session.modal && !selectModal;
-
-	const latestExpandableId = useMemo(() => {
-		for (let index = session.transcript.length - 1; index >= 0; index--) {
-			const item = session.transcript[index];
-			if (isExpandableToolResult(item)) {
-				return item.id;
-			}
-		}
-		return undefined;
-	}, [session.transcript]);
-
-	useEffect(() => {
-		const updateSize = (): void => {
-			setTerminalSize({
-				columns: stdout.columns ?? 100,
-				rows: stdout.rows ?? 40,
-			});
-		};
-		updateSize();
-		stdout.on('resize', updateSize);
-		return () => {
-			stdout.off('resize', updateSize);
-		};
-	}, [stdout]);
-
-	const conversationBudget = useMemo(() => {
-		let reserved = 11;
-		if (session.modal) {
-			reserved += session.modal.kind === 'question' ? 6 : 7;
-		}
-		if (selectModal) {
-			reserved += Math.min(selectModal.options.length, 6) + 4;
-		}
-		if (showPicker) {
-			reserved += Math.min(commandHints.length, 6) + 4;
-		}
-		return Math.max(8, terminalSize.rows - reserved);
-	}, [commandHints.length, selectModal, session.modal, showPicker, terminalSize.rows]);
 
 	useEffect(() => {
 		setPickerIndex(0);
 	}, [commandHints.length, input]);
 
 	useEffect(() => {
-		setMessageOffset(0);
-	}, [session.transcript.length]);
-
-	useEffect(() => {
 		if (!session.selectRequest) {
 			return;
 		}
+
 		const request = session.selectRequest;
 		if (request.options.length === 0) {
 			session.setSelectRequest(null);
 			return;
 		}
+
 		setSelectIndex(0);
 		setSelectModal({
 			title: request.title,
@@ -135,8 +133,16 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 		session.setSelectRequest(null);
 	}, [session.selectRequest]);
 
+	useEffect(
+		() => () => {
+			clearPendingEscapeAction();
+		},
+		[],
+	);
+
 	const handleCommand = (command: string): boolean => {
 		const trimmed = command.trim();
+
 		if (trimmed === '/permissions' || trimmed === '/permissions show') {
 			const currentMode = String(session.status.permission_mode ?? 'default');
 			const options = PERMISSION_MODES.map((option) => ({
@@ -156,18 +162,133 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 			});
 			return true;
 		}
+
+		if (trimmed === '/evo-mode' || trimmed === '/evo-mode show') {
+			const currentMode = String(
+				session.status.auto_self_evolution_enabled ? (session.status.auto_self_evolution_mode ?? 'candidate') : 'off',
+			);
+			const options = EVOLUTION_MODES.map((option) => ({
+				...option,
+				active: option.value === currentMode,
+			}));
+			const initialIndex = options.findIndex((option) => option.active);
+			setSelectIndex(initialIndex >= 0 ? initialIndex : 0);
+			setSelectModal({
+				title: 'Evolution Mode',
+				options,
+				onSelect: (value) => {
+					session.sendRequest({type: 'submit_line', line: `/evo-mode ${value}`});
+					session.setBusy(true);
+					setSelectModal(null);
+				},
+			});
+			return true;
+		}
+
 		if (trimmed === '/resume') {
 			session.sendRequest({type: 'list_sessions'});
 			return true;
 		}
+
 		return false;
 	};
 
+	const removeLastPendingAttachment = (): void => {
+		const last = session.pendingAttachments[session.pendingAttachments.length - 1];
+		if (!last) {
+			return;
+		}
+		session.sendRequest({type: 'discard_attachment', attachment_id: last.id});
+		session.setPendingAttachments((items) => items.filter((item) => item.id !== last.id));
+	};
+
+	const pasteImage = async (): Promise<void> => {
+		if (session.busy || session.modal || selectModal || pastingImage) {
+			return;
+		}
+
+		setPasteError(null);
+		setPastingImage(true);
+
+		try {
+			const capture = await captureClipboardImage();
+			session.sendRequest({
+				type: 'import_attachment',
+				source_path: capture.path,
+				file_name: capture.fileName,
+				mime_type: capture.mimeType,
+				source: capture.source,
+				delete_source: true,
+			});
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			setPasteError(message);
+		} finally {
+			setPastingImage(false);
+		}
+	};
+
+	const handleInputChange = (nextValue: string): void => {
+		if (suppressShortcutTextRef.current) {
+			suppressShortcutTextRef.current = false;
+			if (isShortcutArtifact(nextValue, input)) {
+				return;
+			}
+		}
+
+		setInput(nextValue);
+	};
+
 	useInput((chunk, key) => {
+		const normalized = chunk.toLowerCase();
+		const hasPendingEscapeAction = Boolean(pendingEscapeActionRef.current);
+
 		if (key.ctrl && chunk === 'c') {
+			clearPendingEscapeAction();
 			session.sendRequest({type: 'shutdown'});
 			session.setBusy(true);
 			return;
+		}
+
+		if (isPasteShortcut(chunk, key, hasPendingEscapeAction)) {
+			clearPendingEscapeAction();
+			suppressShortcutTextRef.current = true;
+			void pasteImage();
+			return;
+		}
+
+		if (hasPendingEscapeAction) {
+			flushPendingEscapeAction();
+			return;
+		}
+
+		if (key.escape) {
+			if (selectModal) {
+				scheduleEscapeAction(() => {
+					setSelectModal(null);
+				});
+				return;
+			}
+
+			if (session.modal?.kind === 'permission') {
+				const requestId = session.modal.request_id;
+				scheduleEscapeAction(() => {
+					session.sendRequest({
+						type: 'permission_response',
+						request_id: requestId,
+						allowed: false,
+					});
+					session.setModal(null);
+				});
+				return;
+			}
+
+			if (showPicker) {
+				scheduleEscapeAction(() => {
+					setInput('');
+				});
+				return;
+			}
 		}
 
 		if (selectModal) {
@@ -186,15 +307,11 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 				}
 				return;
 			}
-			if (key.escape) {
-				setSelectModal(null);
-				return;
-			}
 			return;
 		}
 
 		if (session.modal?.kind === 'permission') {
-			if (chunk.toLowerCase() === 'y') {
+			if (normalized === 'y') {
 				session.sendRequest({
 					type: 'permission_response',
 					request_id: session.modal.request_id,
@@ -203,7 +320,7 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 				session.setModal(null);
 				return;
 			}
-			if (chunk.toLowerCase() === 'n' || key.escape) {
+			if (normalized === 'n' || key.escape) {
 				session.sendRequest({
 					type: 'permission_response',
 					request_id: session.modal.request_id,
@@ -217,28 +334,6 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 
 		if (session.busy) {
 			return;
-		}
-
-		if (!showPicker && !session.modal && !selectModal && !input && latestExpandableId) {
-			if (key.rightArrow) {
-				setExpandedResultIds((items) => (items.includes(latestExpandableId) ? items : [...items, latestExpandableId]));
-				return;
-			}
-			if (key.leftArrow) {
-				setExpandedResultIds((items) => items.filter((item) => item !== latestExpandableId));
-				return;
-			}
-		}
-
-		if (!showPicker && !session.modal && !selectModal && !input) {
-			if (key.pageUp || (key.ctrl && key.upArrow)) {
-				setMessageOffset((value) => Math.min(value + 6, Math.max(0, session.transcript.length - 1)));
-				return;
-			}
-			if (key.pageDown || (key.ctrl && key.downArrow)) {
-				setMessageOffset((value) => Math.max(0, value - 6));
-				return;
-			}
 		}
 
 		if (showPicker) {
@@ -267,13 +362,9 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 				}
 				return;
 			}
-			if (key.escape) {
-				setInput('');
-				return;
-			}
 		}
 
-		if (!showPicker && key.upArrow) {
+		if (!showPicker && key.ctrl && normalized === 'p') {
 			const nextIndex = Math.min(history.length - 1, historyIndex + 1);
 			if (nextIndex >= 0) {
 				setHistoryIndex(nextIndex);
@@ -281,11 +372,16 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 			}
 			return;
 		}
-		if (!showPicker && key.downArrow) {
+
+		if (!showPicker && key.ctrl && normalized === 'n') {
 			const nextIndex = Math.max(-1, historyIndex - 1);
 			setHistoryIndex(nextIndex);
 			setInput(nextIndex === -1 ? '' : (history[history.length - 1 - nextIndex] ?? ''));
 			return;
+		}
+
+		if (!showPicker && !input && session.pendingAttachments.length > 0 && (key.backspace || key.delete)) {
+			removeLastPendingAttachment();
 		}
 	});
 
@@ -300,19 +396,35 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 			setModalInput('');
 			return;
 		}
-		if (!value.trim() || session.busy) {
+
+		if ((!value.trim() && session.pendingAttachments.length === 0) || session.busy || pastingImage) {
 			return;
 		}
+
+		if (session.pendingAttachments.length > 0 && value.trim().startsWith('/')) {
+			setPasteError('Attachments cannot be sent with slash commands.');
+			return;
+		}
+
 		if (handleCommand(value)) {
 			setHistory((items) => [...items, value]);
 			setHistoryIndex(-1);
 			setInput('');
 			return;
 		}
-		session.sendRequest({type: 'submit_line', line: value});
-		setHistory((items) => [...items, value]);
+
+		setPasteError(null);
+		session.sendRequest({
+			type: 'submit_message',
+			text: value,
+			attachments: session.pendingAttachments,
+		});
+		if (value.trim()) {
+			setHistory((items) => [...items, value]);
+		}
 		setHistoryIndex(-1);
 		setInput('');
+		session.setPendingAttachments([]);
 		session.setBusy(true);
 	};
 
@@ -320,15 +432,10 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 		<Box flexDirection="column" paddingX={1} height="100%">
 			<Box flexDirection="column" flexGrow={1}>
 				<ConversationView
-					items={session.transcript}
+					items={session.renderFeed}
 					assistantBuffer={session.assistantBuffer}
 					showWelcome={true}
 					status={session.status}
-					maxVisibleLines={conversationBudget}
-					terminalWidth={Math.max(40, terminalSize.columns - 4)}
-					expandedResultIds={expandedResultIds}
-					latestExpandableId={latestExpandableId}
-					messageOffset={messageOffset}
 				/>
 			</Box>
 
@@ -348,22 +455,47 @@ export function App({config}: {config: FrontendConfig}): React.JSX.Element {
 				<PromptInput
 					busy={session.busy}
 					input={input}
-					setInput={setInput}
+					pendingAttachments={session.pendingAttachments}
+					pastingImage={pastingImage}
+					pasteError={pasteError}
+					setInput={handleInputChange}
 					onSubmit={onSubmit}
 					toolName={session.busy ? currentToolName : undefined}
 					suppressSubmit={showPicker}
-					hasExpandableResult={Boolean(latestExpandableId)}
-					resultExpanded={Boolean(latestExpandableId && expandedResultIds.includes(latestExpandableId))}
 				/>
 			)}
 		</Box>
 	);
 }
 
-function isExpandableToolResult(item: TranscriptItem): boolean {
-	if (item.role !== 'tool_result' || item.tool_name === 'run_subagent') {
+function isPasteShortcut(chunk: string, key: {ctrl: boolean; meta: boolean}, hasPendingEscapeAction: boolean): boolean {
+	const normalized = chunk.toLowerCase();
+	return (
+		chunk === '\u0016' ||
+		(key.ctrl && normalized === 'v') ||
+		(key.meta && normalized === 'v') ||
+		(hasPendingEscapeAction && normalized === 'v')
+	);
+}
+
+function isShortcutArtifact(nextValue: string, previousValue: string): boolean {
+	if (nextValue.length !== previousValue.length + 1) {
 		return false;
 	}
-	const lines = item.text.split('\n');
-	return lines.length > 6 || item.text.length > 260;
+
+	for (let index = 0; index < nextValue.length; index++) {
+		const candidate = nextValue[index];
+		if (!candidate) {
+			continue;
+		}
+		if (candidate !== '\u0016' && candidate.toLowerCase() !== 'v') {
+			continue;
+		}
+		const withoutCandidate = nextValue.slice(0, index) + nextValue.slice(index + 1);
+		if (withoutCandidate === previousValue) {
+			return true;
+		}
+	}
+
+	return false;
 }

@@ -4,12 +4,14 @@ import json
 import re
 import subprocess
 import tempfile
+import threading
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
 from evo_harness.harness.content_windows import MatchHit, context_safe_output, format_match_listing, format_segmented_file_view
+from evo_harness.harness.permissions import is_safe_shell_command
 
 
 @dataclass(slots=True)
@@ -213,27 +215,84 @@ class BashTool(BaseTool):
     tags = ("shell", "command", "process")
     destructive = True
 
+    def is_read_only(self, arguments: dict[str, Any]) -> bool:
+        return is_safe_shell_command(str(arguments.get("command", "")))
+
     def execute(self, arguments: dict[str, Any], context: ToolExecutionContext) -> ToolResult:
         command = str(arguments["command"])
         timeout = int(arguments.get("timeout_ms", 30000)) / 1000.0
         shell_command = _shell_command(command)
         cwd = _resolve_optional_path(context.cwd, arguments.get("cwd"))
+        progress_callback = context.metadata.get("progress_callback")
         try:
-            process = subprocess.run(
+            process = subprocess.Popen(
                 shell_command,
                 cwd=str(cwd),
-                check=False,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=timeout,
+                encoding="utf-8",
+                errors="replace",
+                bufsize=1,
             )
         except subprocess.TimeoutExpired:
             return ToolResult(output=f"Command timed out after {timeout:.1f}s", is_error=True)
-        output = "\n".join(part for part in [process.stdout.strip(), process.stderr.strip()] if part)
+        except Exception as exc:
+            return ToolResult(output=f"Command failed to start: {exc}", is_error=True)
+
+        captured: list[tuple[str, str]] = []
+        threads: list[threading.Thread] = []
+
+        def _emit_progress(stream_name: str, text: str) -> None:
+            if not callable(progress_callback):
+                return
+            progress_callback({"stream": stream_name, "text": text})
+
+        def _pump_stream(stream, stream_name: str) -> None:
+            if stream is None:
+                return
+            buffer = ""
+            while True:
+                chunk = stream.read(1)
+                if not chunk:
+                    break
+                buffer += chunk
+                if chunk in {"\n", "\r"} or len(buffer) >= 160:
+                    text = buffer.rstrip("\r\n")
+                    if text:
+                        captured.append((stream_name, text))
+                        _emit_progress(stream_name, text)
+                    buffer = ""
+            tail = buffer.rstrip("\r\n")
+            if tail:
+                captured.append((stream_name, tail))
+                _emit_progress(stream_name, tail)
+
+        try:
+            for stream_name, stream in (("stdout", process.stdout), ("stderr", process.stderr)):
+                thread = threading.Thread(target=_pump_stream, args=(stream, stream_name), daemon=True)
+                thread.start()
+                threads.append(thread)
+            returncode = process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            for thread in threads:
+                thread.join(timeout=0.5)
+            for stream in (process.stdout, process.stderr):
+                if stream is not None:
+                    stream.close()
+            return ToolResult(output=f"Command timed out after {timeout:.1f}s", is_error=True)
+
+        for thread in threads:
+            thread.join(timeout=0.5)
+        for stream in (process.stdout, process.stderr):
+            if stream is not None:
+                stream.close()
+        output = "\n".join(text for _stream_name, text in captured if text.strip())
         return ToolResult(
             output=output or "(no output)",
-            is_error=process.returncode != 0,
-            metadata={"returncode": process.returncode, "cwd": str(cwd)},
+            is_error=returncode != 0,
+            metadata={"returncode": returncode, "cwd": str(cwd)},
         )
 
     def input_schema(self) -> dict[str, Any]:
@@ -560,19 +619,28 @@ class WebSearchTool(BaseTool):
     default_read_only = True
 
     def execute(self, arguments: dict[str, Any], context: ToolExecutionContext) -> ToolResult:
-        del context
-        from evo_harness.harness.web_research import format_web_search_results, search_web
+        from evo_harness.harness.web_research import run_web_search
 
         query = str(arguments["query"]).strip()
         if not query:
             return ToolResult(output="query must be non-empty.", is_error=True)
         try:
-            results = search_web(query, max_results=int(arguments.get("max_results", 5)))
+            response = run_web_search(
+                query,
+                max_results=int(arguments.get("max_results", 5)),
+                workspace=context.cwd,
+                settings=context.metadata.get("settings"),
+            )
         except Exception as exc:
             return ToolResult(output=f"Web search failed: {exc}", is_error=True)
         return ToolResult(
-            output=format_web_search_results(query, results),
-            metadata={"query": query, "result_count": len(results)},
+            output=response.formatted_text,
+            metadata={
+                "query": query,
+                "result_count": len(response.results),
+                "search_provider": response.provider,
+                **dict(response.metadata),
+            },
         )
 
     def input_schema(self) -> dict[str, Any]:
@@ -714,6 +782,8 @@ class ListRegistryTool(BaseTool):
 
         if kind == "tools":
             payload = runtime.tool_registry.search(query or None)
+        elif kind == "skills":
+            payload = _filter_items(runtime.list_skills(), query)
         elif kind == "commands":
             payload = _filter_items(runtime.list_commands(), query)
         elif kind == "agents":
@@ -735,6 +805,7 @@ class ListRegistryTool(BaseTool):
         elif kind == "all":
             payload = {
                 "tools": runtime.tool_registry.search(query or None),
+                "skills": _filter_items(runtime.list_skills(), query),
                 "commands": _filter_items(runtime.list_commands(), query),
                 "agents": _filter_items(runtime.list_agents(), query),
                 "plugins": _filter_items(runtime.list_plugins(), query),
@@ -757,6 +828,7 @@ class ListRegistryTool(BaseTool):
                     "type": "string",
                     "enum": [
                         "tools",
+                        "skills",
                         "commands",
                         "agents",
                         "plugins",
@@ -1029,6 +1101,7 @@ class WorkspaceStatusTool(BaseTool):
         if runtime is None:
             return ToolResult(output="Runtime metadata is unavailable.", is_error=True)
         settings = runtime.settings
+        surface = runtime.discovery_surface(compact=True)
         payload = {
             "workspace": str(runtime.workspace),
             "model": settings.model,
@@ -1050,14 +1123,12 @@ class WorkspaceStatusTool(BaseTool):
                 "approval_mode": settings.approvals.mode,
             },
             "counts": {
-                "tools": len(runtime.list_tools()),
-                "commands": len(runtime.list_commands()),
-                "agents": len(runtime.list_agents()),
-                "plugins": len(runtime.list_plugins()),
+                **dict(surface.get("counts", {})),
                 "approvals_pending": len(runtime.list_approvals(status="pending")),
                 "tasks": len(runtime.list_tasks()),
                 "sessions": len(runtime.list_sessions()),
             },
+            "surface": surface,
             "active_command": runtime.active_command.to_dict() if runtime.active_command is not None else None,
         }
         return ToolResult(output=json.dumps(payload, indent=2, ensure_ascii=False))

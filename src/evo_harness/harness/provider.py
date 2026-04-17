@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import base64
 import json
 import os
 import random
+import re
 import time
 import urllib.error
 import urllib.request
@@ -198,6 +200,7 @@ class AnthropicProvider(BaseProvider):
         max_retries: int = 3,
         base_delay: float = 1.0,
         max_delay: float = 30.0,
+        request_timeout_seconds: int = 60,
         headers: dict[str, str] | None = None,
         http_post: Any | None = None,
     ) -> None:
@@ -210,6 +213,7 @@ class AnthropicProvider(BaseProvider):
         self.max_retries = max_retries
         self.base_delay = base_delay
         self.max_delay = max_delay
+        self.request_timeout_seconds = request_timeout_seconds
         self.headers = dict(headers or {})
         self._http_post = http_post or _http_post_json
         if not self.api_key:
@@ -243,6 +247,7 @@ class AnthropicProvider(BaseProvider):
             max_retries=self.max_retries,
             base_delay=self.base_delay,
             max_delay=self.max_delay,
+            request_timeout_seconds=self.request_timeout_seconds,
             headers=self.headers,
             http_post=self._http_post,
         )
@@ -261,6 +266,7 @@ class AnthropicProvider(BaseProvider):
             max_retries=self.max_retries,
             base_delay=self.base_delay,
             max_delay=self.max_delay,
+            request_timeout_seconds=self.request_timeout_seconds,
         )
 
 
@@ -278,6 +284,7 @@ class OpenAIChatProvider(BaseProvider):
         max_retries: int = 3,
         base_delay: float = 1.0,
         max_delay: float = 30.0,
+        request_timeout_seconds: int = 60,
         include_reasoning_content: bool = True,
         headers: dict[str, str] | None = None,
         http_post: Any | None = None,
@@ -290,6 +297,7 @@ class OpenAIChatProvider(BaseProvider):
         self.max_retries = max_retries
         self.base_delay = base_delay
         self.max_delay = max_delay
+        self.request_timeout_seconds = request_timeout_seconds
         self.include_reasoning_content = include_reasoning_content
         self.headers = dict(headers or {})
         self._http_post = http_post or _http_post_json
@@ -327,6 +335,7 @@ class OpenAIChatProvider(BaseProvider):
             max_retries=self.max_retries,
             base_delay=self.base_delay,
             max_delay=self.max_delay,
+            request_timeout_seconds=self.request_timeout_seconds,
             include_reasoning_content=self.include_reasoning_content,
             headers=self.headers,
             http_post=self._http_post,
@@ -345,6 +354,7 @@ class OpenAIChatProvider(BaseProvider):
             max_retries=self.max_retries,
             base_delay=self.base_delay,
             max_delay=self.max_delay,
+            request_timeout_seconds=self.request_timeout_seconds,
         )
 
 
@@ -476,6 +486,10 @@ def build_live_provider(
             api_key_env=api_key_env,
             base_url=base_url,
             max_tokens=settings.max_tokens,
+            max_retries=settings.provider.max_retries,
+            base_delay=settings.provider.retry_base_delay,
+            max_delay=settings.provider.retry_max_delay,
+            request_timeout_seconds=settings.provider.request_timeout_seconds,
             include_reasoning_content=resolved_profile.name in {"openai", "moonshot"},
             headers=headers,
         )
@@ -486,6 +500,10 @@ def build_live_provider(
         base_url=base_url,
         anthropic_version=settings.provider.anthropic_version,
         max_tokens=settings.max_tokens,
+        max_retries=settings.provider.max_retries,
+        base_delay=settings.provider.retry_base_delay,
+        max_delay=settings.provider.retry_max_delay,
+        request_timeout_seconds=settings.provider.request_timeout_seconds,
         headers=headers if auth_scheme == "x-api-key" else headers,
     )
 
@@ -526,6 +544,10 @@ def _messages_to_anthropic(messages: list[ChatMessage]) -> list[dict[str, Any]]:
                 )
             else:
                 converted.append({"role": "user", "content": message.text})
+            continue
+        if message.attachments:
+            content_blocks = _user_content_blocks_for_anthropic(message)
+            converted.append({"role": "user", "content": content_blocks or message.text})
             continue
         converted.append({"role": "user", "content": message.text})
     return converted
@@ -575,8 +597,106 @@ def _messages_to_openai(
                 tool_name = message.tool_name or "tool"
                 converted.append({"role": "user", "content": f"[tool context] {tool_name}: {message.text}"})
             continue
+        if message.attachments:
+            converted.append({"role": "user", "content": _user_content_parts_for_openai(message)})
+            continue
         converted.append({"role": "user", "content": message.text})
     return converted
+
+
+def _user_content_blocks_for_anthropic(message: ChatMessage) -> list[dict[str, Any]]:
+    content_blocks: list[dict[str, Any]] = []
+    if message.text:
+        content_blocks.append({"type": "text", "text": message.text})
+    for index, attachment in enumerate(message.attachments, start=1):
+        image_block = _anthropic_image_block(attachment)
+        if image_block is not None:
+            content_blocks.append(image_block)
+        metadata_text = _attachment_context_text(attachment, index=index)
+        if metadata_text:
+            content_blocks.append({"type": "text", "text": metadata_text})
+    return content_blocks
+
+
+def _user_content_parts_for_openai(message: ChatMessage) -> list[dict[str, Any]]:
+    parts: list[dict[str, Any]] = []
+    if message.text:
+        parts.append({"type": "text", "text": message.text})
+    for index, attachment in enumerate(message.attachments, start=1):
+        image_part = _openai_image_part(attachment)
+        if image_part is not None:
+            parts.append(image_part)
+        metadata_text = _attachment_context_text(attachment, index=index)
+        if metadata_text:
+            parts.append({"type": "text", "text": metadata_text})
+    return parts
+
+
+def _anthropic_image_block(attachment: dict[str, Any]) -> dict[str, Any] | None:
+    if str(attachment.get("kind", "") or "image").lower() != "image":
+        return None
+    mime_type = str(attachment.get("mime_type", "") or "").strip().lower()
+    data = _attachment_base64(attachment)
+    if not mime_type or not data:
+        return None
+    return {
+        "type": "image",
+        "source": {
+            "type": "base64",
+            "media_type": mime_type,
+            "data": data,
+        },
+    }
+
+
+def _openai_image_part(attachment: dict[str, Any]) -> dict[str, Any] | None:
+    if str(attachment.get("kind", "") or "image").lower() != "image":
+        return None
+    mime_type = str(attachment.get("mime_type", "") or "").strip().lower()
+    data = _attachment_base64(attachment)
+    if not mime_type or not data:
+        return None
+    return {
+        "type": "image_url",
+        "image_url": {"url": f"data:{mime_type};base64,{data}"},
+    }
+
+
+def _attachment_base64(attachment: dict[str, Any]) -> str:
+    path_text = str(attachment.get("path", "") or "").strip()
+    if not path_text:
+        return ""
+    path = Path(path_text)
+    if not path.exists() or not path.is_file():
+        return ""
+    try:
+        return base64.b64encode(path.read_bytes()).decode("ascii")
+    except OSError:
+        return ""
+
+
+def _attachment_context_text(attachment: dict[str, Any], *, index: int) -> str:
+    kind = str(attachment.get("kind", "attachment") or "attachment").strip().lower()
+    file_name = str(
+        attachment.get("file_name")
+        or Path(str(attachment.get("path", "") or "")).name
+        or f"{kind or 'attachment'}-{index}"
+    ).strip()
+    parts = [f"[{'Image' if kind == 'image' else kind.capitalize()} #{index}] {file_name}"]
+    path_text = str(attachment.get("path", "") or "").strip()
+    if path_text:
+        parts.append(f"stored_path={path_text}")
+    source = str(attachment.get("source", "") or "").strip()
+    if source:
+        parts.append(f"source={source}")
+    width = attachment.get("width")
+    height = attachment.get("height")
+    if width and height:
+        parts.append(f"size={width}x{height}")
+    byte_count = int(attachment.get("byte_count", 0) or 0)
+    if byte_count > 0:
+        parts.append(f"bytes={byte_count}")
+    return " ".join(parts)
 
 
 def _tool_schema_to_anthropic(item: dict[str, Any]) -> dict[str, Any]:
@@ -636,6 +756,7 @@ def _provider_turn_from_openai(payload: dict[str, Any]) -> ProviderTurn:
         raise RequestFailure("OpenAI-compatible provider returned no choices")
     choice = dict(choices[0])
     message = dict(choice.get("message", {}))
+    assistant_text = str(message.get("content", "") or "").strip()
     tool_calls: list[ToolCall] = []
     for item in message.get("tool_calls", []):
         function = dict(item.get("function", {}))
@@ -650,11 +771,18 @@ def _provider_turn_from_openai(payload: dict[str, Any]) -> ProviderTurn:
                 id=str(item.get("id", "")) or None,
             )
         )
+    if not tool_calls and "<tool_call>" in assistant_text:
+        assistant_text, fallback_tool_calls = _extract_tool_calls_from_markup(assistant_text)
+        tool_calls.extend(fallback_tool_calls)
     usage = dict(payload.get("usage", {}))
     finish_reason = choice.get("finish_reason")
     reasoning_content = str(message.get("reasoning_content", "") or "").strip()
+    if not assistant_text and reasoning_content and not tool_calls:
+        # Some OpenAI-compatible providers, including Kimi/Moonshot, occasionally
+        # place the usable final text in reasoning_content and leave content empty.
+        assistant_text = reasoning_content
     return ProviderTurn(
-        assistant_text=str(message.get("content", "") or "").strip(),
+        assistant_text=assistant_text,
         tool_calls=tool_calls,
         stop=finish_reason == "stop" and not tool_calls,
         metadata={
@@ -668,7 +796,41 @@ def _provider_turn_from_openai(payload: dict[str, Any]) -> ProviderTurn:
     )
 
 
-def _http_post_json(url: str, payload: dict[str, Any], *, headers: dict[str, str]) -> dict[str, Any]:
+def _extract_tool_calls_from_markup(text: str) -> tuple[str, list[ToolCall]]:
+    calls: list[ToolCall] = []
+    remaining = text
+    segments = re.findall(r"<tool_call>(.*?)</tool_call>", text, flags=re.DOTALL)
+    if not segments:
+        return text, calls
+    for index, segment in enumerate(segments, start=1):
+        stripped = segment.strip()
+        if not stripped:
+            continue
+        tool_name_match = re.match(r"^\s*([A-Za-z0-9_.:-]+)", stripped)
+        if tool_name_match is None:
+            continue
+        tool_name = tool_name_match.group(1).strip()
+        arguments: dict[str, Any] = {}
+        for key, value in re.findall(r"<arg_key>(.*?)</arg_key>\s*<arg_value>(.*?)</arg_value>", stripped, flags=re.DOTALL):
+            parsed_value: Any = value.strip()
+            if key.strip() == "arguments":
+                try:
+                    parsed_value = json.loads(parsed_value)
+                except json.JSONDecodeError:
+                    parsed_value = parsed_value
+            arguments[key.strip()] = parsed_value
+        calls.append(ToolCall(name=tool_name, arguments=arguments, id=f"markup_tool_call_{index}"))
+        remaining = remaining.replace(f"<tool_call>{segment}</tool_call>", "").strip()
+    return remaining, calls
+
+
+def _http_post_json(
+    url: str,
+    payload: dict[str, Any],
+    *,
+    headers: dict[str, str],
+    request_timeout_seconds: int = 60,
+) -> dict[str, Any]:
     data = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
         url,
@@ -680,7 +842,7 @@ def _http_post_json(url: str, payload: dict[str, Any], *, headers: dict[str, str
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=request_timeout_seconds) as response:
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
@@ -693,6 +855,8 @@ def _http_post_json(url: str, payload: dict[str, Any], *, headers: dict[str, str
         raise ClientRequestFailure(body or f"HTTP {exc.code}") from exc
     except urllib.error.URLError as exc:
         raise RequestFailure(str(exc)) from exc
+    except TimeoutError as exc:
+        raise RequestFailure(str(exc)) from exc
 
 
 def _post_with_retry(
@@ -704,11 +868,17 @@ def _post_with_retry(
     max_retries: int,
     base_delay: float,
     max_delay: float,
+    request_timeout_seconds: int,
 ) -> dict[str, Any]:
     last_error: Exception | None = None
     for attempt in range(max_retries + 1):
         try:
-            return http_post(url, payload, headers=headers)
+            try:
+                return http_post(url, payload, headers=headers, request_timeout_seconds=request_timeout_seconds)
+            except TypeError as exc:
+                if "request_timeout_seconds" not in str(exc):
+                    raise
+                return http_post(url, payload, headers=headers)
         except HarnessApiError as exc:
             last_error = exc
             if isinstance(exc, (AuthenticationFailure, ClientRequestFailure)):

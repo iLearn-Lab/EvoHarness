@@ -2,11 +2,11 @@ import React from 'react';
 import {Box, Text} from 'ink';
 
 const LOGO_LINES = [
-	'█████  █   █  ███      █   █  ███  ████  █   █  ████   ███   ███ ',
-	'█      █   █ █   █     █   █ █   █ █   █ ██  █ █      █     █    ',
-	'████   █   █ █   █     █████ █████ ████  █ █ █ ███    ███   ███  ',
-	'█       █ █  █   █     █   █ █   █ █  █  █  ██ █         █     █ ',
-	'█████    █    ███      █   █ █   █ █   █ █   █ ████   ███   ███  ',
+	'  ______          __  __',
+	' | ____|_   _____|  \\/  | __ _ _ __   ___ ___',
+	' |  _| \\ \\ / / _ \\ |\\/| |/ _` | `_ \\ / __/ _ \\',
+	' | |___ \\ V /  __/ |  | | (_| | | | | (_|  __/',
+	' |_____| \\_/ \\___|_|  |_|\\__,_|_| |_|\\___\\___|',
 ] as const;
 
 export function WelcomeBanner({status}: {status?: Record<string, unknown>}): React.JSX.Element {
@@ -30,14 +30,14 @@ export function WelcomeBanner({status}: {status?: Record<string, unknown>}): Rea
 					</Text>
 				))}
 				<Text color="white" bold>
-					Evo Harness  {'(^_^)/'}
+					Evo Harness  (^_^)/
 				</Text>
 			</Box>
 
 			<Text color="gray">
-				terminal-native agent runtime with commands, MCP, subagents, and a little attitude {'(^_^)/'}
+				terminal-native agent runtime with commands, MCP, subagents, and a little attitude (^_^)
 			</Text>
-			<Text color="magenta">make the harness feel alive, not just available {'(>ω<)'}</Text>
+			<Text color="magenta">make the harness feel alive, not just available (o_o)</Text>
 
 			<Box marginTop={1} flexDirection="row">
 				<MetricPill label="workspace" value={workspace} color="white" />
@@ -56,13 +56,13 @@ export function WelcomeBanner({status}: {status?: Record<string, unknown>}): Rea
 			<Text>
 				<Text color="cyan">/help</Text>
 				<Text dimColor> guide</Text>
-				<Text dimColor>{'  •  '}</Text>
+				<Text dimColor>{'  -  '}</Text>
 				<Text color="cyan">/resume</Text>
 				<Text dimColor> sessions</Text>
-				<Text dimColor>{'  •  '}</Text>
+				<Text dimColor>{'  -  '}</Text>
 				<Text color="cyan">/permissions</Text>
 				<Text dimColor> mode</Text>
-				<Text dimColor>{'  •  '}</Text>
+				<Text dimColor>{'  -  '}</Text>
 				<Text color="cyan">Ctrl+C</Text>
 				<Text dimColor> exit</Text>
 			</Text>
@@ -74,11 +74,11 @@ function WindowBar(): React.JSX.Element {
 	return (
 		<Box justifyContent="space-between" marginBottom={1}>
 			<Text>
-				<Text color="red">●</Text>
+				<Text color="red">o</Text>
 				<Text> </Text>
-				<Text color="yellow">●</Text>
+				<Text color="yellow">o</Text>
 				<Text> </Text>
-				<Text color="green">●</Text>
+				<Text color="green">o</Text>
 			</Text>
 			<Text color="gray">terminal</Text>
 		</Box>

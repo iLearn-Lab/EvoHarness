@@ -18,11 +18,19 @@ class ValidationPlanner:
         steps: list[str] = []
 
         if capabilities.replay_validation:
+            steps.append("Validate replay readiness and surface completeness.")
             steps.append(f"Replay the original task: {trace.task_id}")
 
         if capabilities.regression_suite:
-            target = ", ".join(trace.validation_targets) or "default regression checks"
-            steps.append(f"Run regression validation: {target}")
+            command_targets = [target for target in trace.validation_targets if _looks_like_executable_validation(target)]
+            semantic_targets = [target for target in trace.validation_targets if target not in command_targets]
+            if command_targets:
+                for target in command_targets:
+                    steps.append(f"Run regression validation: {target}")
+            else:
+                steps.append("Run regression validation: default regression checks")
+            if semantic_targets:
+                steps.append("Validate deliverable signals: " + ", ".join(semantic_targets))
 
         if proposal.operator == OperatorName.REVISE_SKILL and capabilities.skill_validate:
             steps.append("Validate the revised skill before promotion.")
@@ -43,3 +51,27 @@ class ValidationPlanner:
         if not proposal.required_capabilities:
             return True
         return capabilities.supports(*proposal.required_capabilities)
+
+
+def _looks_like_executable_validation(target: str) -> bool:
+    lowered = str(target).strip().lower()
+    if not lowered:
+        return False
+    executable_prefixes = (
+        "python ",
+        "python -m ",
+        "pytest",
+        "npm ",
+        "pnpm ",
+        "yarn ",
+        "go ",
+        "cargo ",
+        "dotnet ",
+        "mvn ",
+        "gradle ",
+        "make ",
+        "bash ",
+        "cmd ",
+        "powershell ",
+    )
+    return lowered.startswith(executable_prefixes)

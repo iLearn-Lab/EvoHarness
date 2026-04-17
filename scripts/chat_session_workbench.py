@@ -20,6 +20,7 @@ if str(SRC_ROOT) not in sys.path:
 
 from evo_harness.harness.settings import load_settings, save_settings
 from evo_harness.harness.console import enable_utf8_console
+from evo_harness.harness.provider import detect_provider_profile
 
 
 def _copy_workspace(source: Path, target: Path) -> Path:
@@ -38,13 +39,18 @@ def _prepare_settings(
     base_url: str | None,
 ) -> Path:
     settings = load_settings(workspace=workspace)
+    profile = detect_provider_profile(profile=provider, model=model, base_url=base_url)
     settings.model = model
-    settings.provider.provider = provider
-    settings.provider.profile = provider
+    settings.provider.provider = profile.name
+    settings.provider.profile = profile.name
     settings.provider.api_key = None
     settings.provider.api_key_env = api_key_env
-    settings.provider.base_url = base_url or settings.provider.base_url
+    settings.provider.api_format = profile.api_format
+    settings.provider.auth_scheme = profile.auth_scheme
+    settings.provider.base_url = base_url or profile.default_base_url
     settings.permission.mode = "default"
+    settings.runtime.auto_self_evolution = True
+    settings.runtime.auto_self_evolution_mode = "candidate"
     path = workspace / ".evo-harness" / "settings.chat-workbench.json"
     return save_settings(settings, path)
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+import os
 from pathlib import Path
 from typing import Any, Callable
 
@@ -25,6 +26,7 @@ from evo_harness.harness.settings import HarnessSettings, load_settings
 from evo_harness.harness.skills import load_workspace_skills
 from evo_harness.harness.tasks import get_task_manager
 from evo_harness.harness.tools import ToolExecutionContext, ToolRegistry, ToolResult, create_default_tool_registry
+from evo_harness.models import HarnessCapabilities
 
 
 @dataclass(slots=True)
@@ -54,6 +56,7 @@ class PreparedToolExecution:
     arguments: dict[str, Any]
     file_path: str | None = None
     shell_command: str | None = None
+    progress_callback: Callable[[dict[str, Any]], None] | None = None
 
 
 class HarnessRuntime:
@@ -108,6 +111,54 @@ class HarnessRuntime:
     def list_tools(self) -> list[dict[str, Any]]:
         return self.tool_registry.describe()
 
+    def discovery_surface(self, *, compact: bool = False) -> dict[str, Any]:
+        def capped_names(items: list[dict[str, Any]], *, key_path: tuple[str, ...], limit: int) -> list[str]:
+            values: list[str] = []
+            for item in items[:limit]:
+                value: Any = item
+                for key in key_path:
+                    if not isinstance(value, dict):
+                        value = None
+                        break
+                    value = value.get(key)
+                if value:
+                    values.append(str(value))
+            return values
+
+        tool_limit = 12 if compact else 24
+        surface_limit = 8 if compact else 20
+        commands = self.list_commands()
+        skills = self.list_skills()
+        agents = self.list_agents()
+        plugins = self.list_plugins()
+        mcp_servers = self.list_mcp_servers()
+        mcp_tools = self.list_mcp_tools()
+        mcp_resources = self.list_mcp_resources()
+        mcp_prompts = self.list_mcp_prompts()
+        tools = self.list_tools()
+        return {
+            "counts": {
+                "tools": len(tools),
+                "commands": len(commands),
+                "skills": len(skills),
+                "agents": len(agents),
+                "plugins": len(plugins),
+                "mcp_servers": len(mcp_servers),
+                "mcp_tools": len(mcp_tools),
+                "mcp_resources": len(mcp_resources),
+                "mcp_prompts": len(mcp_prompts),
+            },
+            "tools": capped_names(tools, key_path=("name",), limit=tool_limit),
+            "commands": capped_names(commands, key_path=("name",), limit=surface_limit),
+            "skills": capped_names(skills, key_path=("name",), limit=surface_limit),
+            "agents": capped_names(agents, key_path=("name",), limit=surface_limit),
+            "plugins": capped_names(plugins, key_path=("manifest", "name"), limit=surface_limit),
+            "mcp_servers": capped_names(mcp_servers, key_path=("name",), limit=surface_limit),
+            "mcp_tools": capped_names(mcp_tools, key_path=("name",), limit=surface_limit),
+            "mcp_resources": capped_names(mcp_resources, key_path=("uri",), limit=surface_limit),
+            "mcp_prompts": capped_names(mcp_prompts, key_path=("name",), limit=surface_limit),
+        }
+
     def available_tools(self) -> list[dict[str, Any]]:
         if self.active_command is None or self.active_command.allowed_tools is None:
             return self.tool_registry.describe()
@@ -145,6 +196,47 @@ class HarnessRuntime:
 
     def list_approvals(self, *, status: str | None = None) -> list[dict[str, Any]]:
         return [item.to_dict() for item in self.approval_manager.list_requests(status=status)]
+
+    def evolution_capabilities(self) -> HarnessCapabilities:
+        mutation_allowed = self.settings.permission.mode != "plan"
+        tool_names = {str(item.get("name", "")).strip() for item in self.list_tools() if item.get("name")}
+        commands = self.list_commands()
+        skills = self.list_skills()
+        agents = self.list_agents()
+        plugins = self.list_plugins()
+        hooks = load_workspace_hooks(self.workspace)
+        provider_key_env = str(self.settings.provider.api_key_env or "").strip()
+        provider_available = bool(
+            self.settings.provider.api_key
+            or (provider_key_env and os.environ.get(provider_key_env))
+        )
+        workspace_surface_available = bool(
+            self.settings.workspace_instructions
+            or commands
+            or skills
+            or agents
+            or plugins
+        )
+        executable_validation_tools = {"bash", "run_command"} & tool_names
+        return HarnessCapabilities(
+            adapter_name="openharness",
+            skill_upgrade=mutation_allowed and workspace_surface_available,
+            skill_validate=workspace_surface_available,
+            skill_rollback=mutation_allowed and self.settings.safety.rollback_on_apply_validation_failure,
+            memory_write=mutation_allowed and self.settings.memory_enabled,
+            memory_archive=mutation_allowed and self.settings.memory_enabled,
+            session_fork=bool(self.settings.runtime.autosave_sessions),
+            agent_clone=bool(agents),
+            replay_validation=bool(provider_available and self.settings.runtime.autosave_sessions),
+            regression_suite=bool(mutation_allowed and executable_validation_tools),
+            artifact_access=True,
+            execution_history=bool(self.settings.runtime.autosave_sessions),
+            hooks=bool(hooks),
+            subagents="run_subagent" in tool_names or bool(agents),
+            slash_commands=True,
+            permission_rules=True,
+            workspace_instructions=bool(workspace_surface_available),
+        )
 
     def get_agent(self, name: str) -> AgentDefinition | None:
         return find_agent(self.workspace, name)
@@ -188,8 +280,9 @@ class HarnessRuntime:
         arguments: dict[str, Any],
         *,
         tool_call_id: str | None = None,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> ToolResult:
-        prepared, early_result = self.prepare_tool_execution(name, arguments)
+        prepared, early_result = self.prepare_tool_execution(name, arguments, progress_callback=progress_callback)
         if early_result is not None:
             record_name = prepared.tool_name if prepared is not None else name
             self._record_tool(record_name, arguments, early_result, tool_call_id=tool_call_id)
@@ -207,6 +300,8 @@ class HarnessRuntime:
         self,
         name: str,
         arguments: dict[str, Any],
+        *,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> tuple[PreparedToolExecution | None, ToolResult | None]:
         tool = self.tool_registry.get(name)
         if tool is None:
@@ -334,24 +429,43 @@ class HarnessRuntime:
                 arguments=dict(arguments),
                 file_path=file_path,
                 shell_command=shell_command,
+                progress_callback=progress_callback,
             ),
             None,
         )
 
     def execute_prepared_tool(self, prepared: PreparedToolExecution) -> ToolResult:
-        return prepared.tool.execute(
-            prepared.arguments,
-            ToolExecutionContext(
-                cwd=self.workspace,
-                metadata={
-                    "runtime": self,
-                    "tool_registry": self.tool_registry,
-                    "provider_factory": self.current_provider_factory,
-                    "settings": self.settings,
-                    "approval_manager": self.approval_manager,
-                },
-            ),
-        )
+        try:
+            return prepared.tool.execute(
+                prepared.arguments,
+                ToolExecutionContext(
+                    cwd=self.workspace,
+                    metadata={
+                        "runtime": self,
+                        "tool_registry": self.tool_registry,
+                        "provider_factory": self.current_provider_factory,
+                        "settings": self.settings,
+                        "approval_manager": self.approval_manager,
+                        "progress_callback": prepared.progress_callback,
+                    },
+                ),
+            )
+        except KeyError as exc:
+            missing = str(exc).strip("'\"") or "unknown"
+            return ToolResult(
+                output=(
+                    f"Tool {prepared.tool_name} could not run because required argument "
+                    f"`{missing}` was missing."
+                ),
+                is_error=True,
+                metadata={"error_type": "missing_tool_argument", "missing_argument": missing},
+            )
+        except Exception as exc:
+            return ToolResult(
+                output=f"Tool {prepared.tool_name} failed before producing a result: {exc}",
+                is_error=True,
+                metadata={"error_type": type(exc).__name__},
+            )
 
     def finalize_prepared_tool(
         self,
@@ -505,6 +619,10 @@ def _tool_message_metadata(result_metadata: dict[str, Any], tool_metadata: dict[
         "tool_names",
         "model_name",
         "session_path",
+        "search_provider",
+        "provider",
+        "server",
+        "tool",
     ):
         if key in result_metadata:
             merged[key] = result_metadata[key]

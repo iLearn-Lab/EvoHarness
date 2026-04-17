@@ -61,7 +61,7 @@ def build_home_state(workspace: str | Path, *, settings_path: str | Path | None 
     if not runtime.list_mcp_servers():
         warnings.append("No MCP registry sources loaded.")
     if settings.permission.mode == "default":
-        warnings.append("Mutating tools still require confirmation in default mode.")
+        warnings.append("Default mode allows common safe shell reads, but mutating tools still require confirmation.")
     if session_report["totals"]["sessions"] < 3:
         warnings.append("Session history is still sparse for deeper evolution analytics.")
 

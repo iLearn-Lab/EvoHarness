@@ -3,6 +3,18 @@ export type FrontendConfig = {
 	initial_prompt?: string | null;
 };
 
+export type AttachmentPayload = {
+	id: string;
+	kind: string;
+	file_name?: string;
+	mime_type?: string;
+	path?: string;
+	byte_count?: number;
+	width?: number;
+	height?: number;
+	source?: string;
+};
+
 export type TranscriptItem = {
 	id?: string;
 	role: 'system' | 'user' | 'assistant' | 'tool' | 'tool_result' | 'log';
@@ -10,6 +22,7 @@ export type TranscriptItem = {
 	tool_name?: string;
 	tool_input?: Record<string, unknown>;
 	is_error?: boolean;
+	attachments?: AttachmentPayload[];
 	metadata?: Record<string, unknown>;
 };
 
@@ -31,6 +44,8 @@ export type BackendEvent = {
 	type: string;
 	message?: string | null;
 	item?: TranscriptItem | null;
+	items?: TranscriptItem[] | null;
+	attachment?: AttachmentPayload | null;
 	state?: Record<string, unknown> | null;
 	tasks?: TaskSnapshot[] | null;
 	commands?: string[] | null;

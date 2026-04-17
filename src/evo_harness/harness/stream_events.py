@@ -32,9 +32,18 @@ class ToolExecutionCompleted:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class ToolExecutionProgress:
+    tool_name: str
+    output: str
+    stream: str = "stdout"
+    tool_call_id: str | None = None
+
+
 StreamEvent = (
     AssistantTextDelta
     | AssistantTurnComplete
     | ToolExecutionStarted
+    | ToolExecutionProgress
     | ToolExecutionCompleted
 )

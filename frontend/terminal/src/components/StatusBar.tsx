@@ -24,27 +24,24 @@ function StatusBarInner({status, tasks}: {status: Record<string, unknown>; tasks
 
 	return (
 		<Box flexDirection="column" marginTop={1} borderStyle="round" borderColor="gray" paddingX={1}>
-			<Text color="gray">runtime deck  ::  calm, sharp, ready (^_^)/</Text>
 			<Text>
+				<Text color="gray">runtime :: </Text>
 				<Text color="cyan" bold>{workspace}</Text>
-				<Text dimColor>{'  •  '}</Text>
+				<Text dimColor>{'  -  '}</Text>
 				<Text color="magenta">{provider}</Text>
-				<Text dimColor>{'  •  '}</Text>
+				<Text dimColor>{'  -  '}</Text>
 				<Text color="green">{model}</Text>
-				<Text dimColor>{'  •  '}</Text>
+				<Text dimColor>{'  -  '}</Text>
 				<Text color={modeColor(mode)}>{mode}</Text>
 				{activeCommand ? (
 					<>
-						<Text dimColor>{'  •  '}</Text>
+						<Text dimColor>{'  -  '}</Text>
 						<Text color="yellow">/{activeCommand}</Text>
 					</>
 				) : null}
 			</Text>
 			<Text dimColor>
-				surface: commands {commands}  •  skills {skills}  •  agents {agents}  •  plugins {plugins}  •  mcp {mcpServers}/{mcpTools}
-			</Text>
-			<Text dimColor>
-				pulse: tasks {taskCount}  •  approvals {pendingApprovals}  •  sessions {sessions}  •  tokens {formatNum(inputTokens)} / {formatNum(outputTokens)}
+				pulse: tasks {taskCount}  -  approvals {pendingApprovals}  -  sessions {sessions}  -  tokens {formatNum(inputTokens)} / {formatNum(outputTokens)}  -  surface {commands}/{skills}/{agents}/{plugins}/{mcpServers}:{mcpTools}
 			</Text>
 		</Box>
 	);
@@ -63,7 +60,7 @@ function formatNum(value: number): string {
 }
 
 function modeColor(mode: string): 'yellow' | 'green' | 'red' | 'cyan' {
-	if (mode === 'full-auto') {
+	if (mode === 'full-access') {
 		return 'green';
 	}
 	if (mode === 'plan') {

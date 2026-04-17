@@ -8,9 +8,9 @@ from evo_harness.harness.agents import load_workspace_agents
 from evo_harness.harness.commands import load_workspace_commands
 from evo_harness.harness.environment import EnvironmentInfo, get_environment_info
 from evo_harness.harness.memory import (
-    find_relevant_memory_entries,
     load_memory_prompt,
     render_memory_entry,
+    select_relevant_memory_entries,
 )
 from evo_harness.harness.mcp import load_mcp_registry
 from evo_harness.harness.plugins import load_workspace_plugins
@@ -24,6 +24,9 @@ You help users with software engineering tasks including code understanding,
 editing, debugging, command execution, and workflow coordination.
 
 Prefer concrete actions over generic advice.
+Solve the user's immediate task before talking about broader reuse or future improvements.
+During a normal user task, do not create or revise harness capability surfaces such as commands, skills, agents, plugins, or MCP configs as the primary solution unless the user explicitly asked to edit those harness assets.
+When a reusable gap appears, solve through normal task execution paths first and leave durable capability surfacing to post-task self-evolution.
 Respect workspace instructions, safety boundaries, and validation requirements.
 """
 
@@ -72,6 +75,7 @@ def build_system_prompt(
             latest_user_prompt,
             workspace=resolved,
             max_chars_per_file=max_chars_per_file,
+            settings=settings,
         )
         if relevant_memory:
             sections.append(relevant_memory)
@@ -188,12 +192,15 @@ def _format_discovery_section(
     lines = [
         "# Harness Discovery Workflow",
         "- When the workspace is unfamiliar, start with `workspace_status` or `list_registry`.",
+        "- Treat the current commands, skills, agents, plugins, MCP assets, and live tool registry as the first place to look before assuming something is missing.",
         "- Use `tool_help` before using unfamiliar tools.",
         "- If a relevant skill is listed, call the `skill` tool and follow the loaded instructions.",
         "- If a relevant command is listed, prefer activating or rendering it instead of improvising.",
+        "- If a relevant plugin or MCP surface exists, use it directly instead of rebuilding the same workflow from scratch.",
         "- For large files, use `read_file` progressively with `segment` or `start_line`/`end_line` instead of dumping the whole file in one read.",
         "- For broad searches, use `grep` with paginated follow-up reads via `offset` and `limit`.",
         "- If agents are available, use `run_subagent` for bounded exploration, review, or comparison work.",
+        "- Only conclude that a capability is missing after concrete inspection shows the existing surface is insufficient for real execution.",
     ]
     if mcp_server_count:
         lines.append("- If MCP assets are available, prefer MCP tools/resources/prompts when they match the task.")
@@ -223,8 +230,9 @@ def _format_relevant_memory_section(
     *,
     workspace: str | Path,
     max_chars_per_file: int,
+    settings: HarnessSettings,
 ) -> str | None:
-    entries = find_relevant_memory_entries(latest_user_prompt, workspace)
+    entries = select_relevant_memory_entries(latest_user_prompt, workspace, settings=settings)
     if not entries:
         return None
     lines = ["# Relevant Memories"]

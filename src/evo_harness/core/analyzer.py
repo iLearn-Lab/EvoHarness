@@ -34,7 +34,7 @@ class TraceAnalyzer:
                 EvolutionFinding(
                     kind="repeated_failure",
                     severity="high",
-                    summary="This failure pattern has repeated across multiple runs.",
+                    summary="A similar failure pattern has repeated across recent comparable sessions.",
                 )
             )
             risk_score += 0.2
@@ -68,6 +68,19 @@ class TraceAnalyzer:
                 )
             )
             risk_score += 0.1
+
+        if "capability_gap" in trace.error_tags or trace.artifacts.get("capability_gap"):
+            findings.append(
+                EvolutionFinding(
+                    kind="capability_gap",
+                    severity="high",
+                    summary=(
+                        "The session exposed a concrete missing capability that should be turned into a reusable "
+                        "workspace asset instead of being rediscovered next time."
+                    ),
+                )
+            )
+            risk_score += 0.15
 
         if "provider_stall" in trace.error_tags:
             findings.append(
