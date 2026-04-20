@@ -397,3 +397,6 @@ evoh mcp-list --workspace . --kind all
 ## 📄 License
 
 Apache-2.0. See [LICENSE](./LICENSE).
+
+## 🙇‍ Thanks
+[Linux.do](https://linux.do/)
