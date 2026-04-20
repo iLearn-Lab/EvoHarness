@@ -1,4 +1,4 @@
-<table align="center">
+<img width="395" height="143" alt="image" src="https://github.com/user-attachments/assets/695eb09b-1210-49d5-9d3e-ef820d1109a0" /><table align="center">
   <tr>
     <td align="center" valign="middle" width="180">
       <img src="./.github/assets/evoharness-mark.png" alt="EvoHarness mark" width="132">
@@ -397,3 +397,7 @@ evoh mcp-list --workspace . --kind all
 ## 📄 License
 
 Apache-2.0，见 [LICENSE](./LICENSE)。
+
+
+## 🙇‍ 特别感谢
+[Linux.do](https://linux.do/)
