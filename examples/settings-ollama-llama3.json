@@ -1,0 +1,14 @@
+{
+  "model": "llama3",
+  "max_tokens": 4096,
+  "provider": {
+    "provider": "ollama",
+    "profile": "ollama",
+    "api_format": "openai-chat",
+    "base_url": "http://localhost:11434/v1/chat/completions",
+    "request_timeout_seconds": 120
+  },
+  "permissions": {
+    "mode": "default"
+  }
+}

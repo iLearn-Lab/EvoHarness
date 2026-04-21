@@ -202,7 +202,18 @@ EvoHarness will ask for four things:
 | `openai-compatible` | GLM, Qwen, DeepSeek, DashScope, OpenAI-like gateways | `/v1/chat/completions` | `OPENAI_API_KEY` by default |
 | `moonshot` | Kimi / Moonshot | OpenAI-compatible | `MOONSHOT_API_KEY` |
 | `anthropic-compatible` | Claude-style proxies and internal gateways | Anthropic-compatible | `ANTHROPIC_API_KEY` |
+| `claude-code-cli` | **Local Claude Code CLI** | Uses your Claude Code subscription | **No API key needed** |
+| `ollama` | **Local open-source models** | Llama, Qwen, Mistral, etc. | **No API key needed** |
+| `codex` | OpenAI Codex for code | OpenAI-compatible | `OPENAI_API_KEY` |
 | `auto` | fastest first try | inferred from model + base URL | inferred from your setup |
+
+**💡 New: Local & Low-Cost Options!**
+
+- 🆓 **`claude-code-cli`**: Use your Claude Code subscription instead of API keys
+- 🆓 **`ollama`**: Run completely free open-source models locally (Llama 3, Qwen 2, etc.)
+- 💰 **`codex`**: OpenAI Codex for code-specific tasks
+
+See [LOCAL_PROVIDERS.md](./LOCAL_PROVIDERS.md) for detailed setup instructions.
 
 Recommended pattern:
 

@@ -202,7 +202,18 @@ EvoHarness 会依次问你四件事：
 | `openai-compatible` | GLM、Qwen、DeepSeek、DashScope、OpenAI-like 网关 | `/v1/chat/completions` | 默认 `OPENAI_API_KEY` |
 | `moonshot` | Kimi / Moonshot | OpenAI-compatible | `MOONSHOT_API_KEY` |
 | `anthropic-compatible` | Claude 风格代理或内部网关 | Anthropic-compatible | `ANTHROPIC_API_KEY` |
+| `claude-code-cli` | **本地 Claude Code CLI** | 使用你的 Claude Code 订阅 | **不需要 API key** |
+| `ollama` | **本地开源模型** | Llama、Qwen、Mistral 等 | **不需要 API key** |
+| `codex` | OpenAI Codex 代码模型 | OpenAI-compatible | `OPENAI_API_KEY` |
 | `auto` | 先快速跑通再说 | 根据 model + base URL 推断 | 跟随你的实际配置 |
+
+**💡 新增：本地 & 低成本选项！**
+
+- 🆓 **`claude-code-cli`**: 使用你的 Claude Code 订阅，不需要单独的 API key
+- 🆓 **`ollama`**: 运行完全免费的本地开源模型（Llama 3、通义千问 2 等）
+- 💰 **`codex`**: OpenAI Codex 专门用于代码任务
+
+详细配置说明见 [LOCAL_PROVIDERS.md](./LOCAL_PROVIDERS.md)。
 
 推荐使用方式：
 

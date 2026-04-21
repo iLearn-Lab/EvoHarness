@@ -111,6 +111,32 @@ PROVIDER_PROFILES: dict[str, ProviderProfile] = {
         default_base_url="https://open.bigmodel.cn/api/paas/v4/chat/completions",
         description="Zhipu / GLM OpenAI-compatible profile.",
     ),
+    "codex": ProviderProfile(
+        name="codex",
+        api_format="openai-chat",
+        auth_scheme="bearer",
+        default_api_key_env="OPENAI_API_KEY",
+        default_base_url="https://api.openai.com/v1/chat/completions",
+        description="OpenAI Codex models for code generation.",
+    ),
+    "ollama": ProviderProfile(
+        name="ollama",
+        api_format="openai-chat",
+        auth_scheme="none",
+        default_api_key_env="OLLAMA_API_KEY",
+        default_base_url="http://localhost:11434/v1/chat/completions",
+        description="Local Ollama models (Llama, Qwen, etc). No API key needed.",
+        supports_native_auth=False,
+    ),
+    "claude-code-cli": ProviderProfile(
+        name="claude-code-cli",
+        api_format="claude-cli",
+        auth_scheme="none",
+        default_api_key_env="",
+        default_base_url="",
+        description="Local Claude Code CLI. Uses your Claude Code subscription.",
+        supports_native_auth=False,
+    ),
 }
 
 
@@ -288,6 +314,7 @@ class OpenAIChatProvider(BaseProvider):
         include_reasoning_content: bool = True,
         headers: dict[str, str] | None = None,
         http_post: Any | None = None,
+        require_api_key: bool = True,
     ) -> None:
         self.model = model
         self.api_key = api_key or os.environ.get(api_key_env, "")
@@ -301,7 +328,8 @@ class OpenAIChatProvider(BaseProvider):
         self.include_reasoning_content = include_reasoning_content
         self.headers = dict(headers or {})
         self._http_post = http_post or _http_post_json
-        if not self.api_key:
+        self.require_api_key = require_api_key
+        if require_api_key and not self.api_key:
             raise ValueError(f"No API key found. Set {api_key_env} or pass api_key explicitly.")
 
     def next_turn(
@@ -339,13 +367,13 @@ class OpenAIChatProvider(BaseProvider):
             include_reasoning_content=self.include_reasoning_content,
             headers=self.headers,
             http_post=self._http_post,
+            require_api_key=self.require_api_key,
         )
 
     def _post_with_retry(self, payload: dict[str, Any]) -> dict[str, Any]:
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            **self.headers,
-        }
+        headers = {**self.headers}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
         return _post_with_retry(
             self._http_post,
             self.base_url,
@@ -354,6 +382,95 @@ class OpenAIChatProvider(BaseProvider):
             max_retries=self.max_retries,
             base_delay=self.base_delay,
             max_delay=self.max_delay,
+            request_timeout_seconds=self.request_timeout_seconds,
+        )
+
+
+class ClaudeCodeCLIProvider(BaseProvider):
+    """Provider that calls local Claude Code CLI as a subprocess."""
+
+    name = "claude-code-cli"
+
+    def __init__(
+        self,
+        *,
+        model: str = "claude-sonnet-4",
+        cli_command: str = "claude",
+        max_tokens: int = 4096,
+        request_timeout_seconds: int = 300,
+    ) -> None:
+        self.model = model
+        self.cli_command = cli_command
+        self.max_tokens = max_tokens
+        self.request_timeout_seconds = request_timeout_seconds
+
+    def next_turn(
+        self,
+        *,
+        system_prompt: str,
+        messages: list[ChatMessage],
+        tool_schema: list[dict[str, Any]],
+    ) -> ProviderTurn:
+        import subprocess
+        import tempfile
+
+        # Build the prompt from system + messages
+        full_prompt = f"{system_prompt}\n\n"
+        for msg in messages:
+            if msg.role == "user":
+                full_prompt += f"User: {msg.text}\n\n"
+            elif msg.role == "assistant":
+                full_prompt += f"Assistant: {msg.text}\n\n"
+            elif msg.role == "tool":
+                tool_name = msg.tool_name or "tool"
+                full_prompt += f"Tool ({tool_name}): {msg.text}\n\n"
+
+        # Write prompt to temp file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+            f.write(full_prompt)
+            temp_path = f.name
+
+        try:
+            # Call Claude Code CLI
+            result = subprocess.run(
+                [self.cli_command, "chat", "--file", temp_path],
+                capture_output=True,
+                text=True,
+                timeout=self.request_timeout_seconds,
+                encoding='utf-8',
+            )
+
+            if result.returncode != 0:
+                raise RequestFailure(f"Claude Code CLI failed: {result.stderr}")
+
+            assistant_text = result.stdout.strip()
+
+            # Parse tool calls if any (simple heuristic)
+            tool_calls = []
+            if "<tool_call>" in assistant_text:
+                assistant_text, tool_calls = _extract_tool_calls_from_markup(assistant_text)
+
+            return ProviderTurn(
+                assistant_text=assistant_text,
+                tool_calls=tool_calls,
+                stop=not tool_calls,
+                metadata={
+                    "stop_reason": "end_turn" if not tool_calls else "tool_use",
+                    "usage": {"input_tokens": 0, "output_tokens": 0},
+                },
+            )
+        finally:
+            # Clean up temp file
+            try:
+                os.unlink(temp_path)
+            except Exception:
+                pass
+
+    def clone(self) -> "BaseProvider":
+        return ClaudeCodeCLIProvider(
+            model=self.model,
+            cli_command=self.cli_command,
+            max_tokens=self.max_tokens,
             request_timeout_seconds=self.request_timeout_seconds,
         )
 
@@ -377,7 +494,11 @@ def detect_provider_profile(
     base = (base_url or "").lower()
     model_name = (model or "").lower()
     inferred_profile: ProviderProfile
-    if "moonshot" in base or model_name.startswith("kimi"):
+    if "localhost:11434" in base or "ollama" in base or model_name.startswith(("llama", "mistral", "qwen2")):
+        inferred_profile = PROVIDER_PROFILES["ollama"]
+    elif model_name.startswith("codex") or "codex" in model_name:
+        inferred_profile = PROVIDER_PROFILES["codex"]
+    elif "moonshot" in base or model_name.startswith("kimi"):
         inferred_profile = PROVIDER_PROFILES["moonshot"]
     elif "bigmodel" in base or "zhipu" in base or model_name.startswith("glm"):
         inferred_profile = PROVIDER_PROFILES["zhipu"]
@@ -479,7 +600,17 @@ def build_live_provider(
     auth_scheme = getattr(settings.provider, "auth_scheme", resolved_profile.auth_scheme) or resolved_profile.auth_scheme
     api_key = None if api_key_env_override else getattr(settings.provider, "api_key", None)
 
+    if resolved_profile.api_format == "claude-cli":
+        cli_command = getattr(settings.provider, "cli_command", "claude")
+        return ClaudeCodeCLIProvider(
+            model=resolved_model,
+            cli_command=cli_command,
+            max_tokens=settings.max_tokens,
+            request_timeout_seconds=settings.provider.request_timeout_seconds,
+        )
     if resolved_profile.api_format == "openai-chat":
+        # Ollama doesn't require API key
+        require_api_key = resolved_profile.name not in {"ollama"}
         return OpenAIChatProvider(
             model=resolved_model,
             api_key=api_key,
@@ -492,6 +623,7 @@ def build_live_provider(
             request_timeout_seconds=settings.provider.request_timeout_seconds,
             include_reasoning_content=resolved_profile.name in {"openai", "moonshot"},
             headers=headers,
+            require_api_key=require_api_key,
         )
     return AnthropicProvider(
         model=resolved_model,
