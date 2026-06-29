@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 
 class Outcome(str, Enum):
@@ -17,6 +17,61 @@ class OperatorName(str, Enum):
     REVISE_COMMAND = "revise_command"
     DISTILL_MEMORY = "distill_memory"
     STOP = "stop"
+
+
+NegativeControlOutcome = Literal["no_match", "decline", "route_elsewhere", "no_capability_claim"]
+NegativeControlSource = Literal["trace", "proposal", "policy", "manual"]
+
+NEGATIVE_CONTROL_OUTCOMES: set[str] = {"no_match", "decline", "route_elsewhere", "no_capability_claim"}
+NEGATIVE_CONTROL_SOURCES: set[str] = {"trace", "proposal", "policy", "manual"}
+
+
+@dataclass(slots=True)
+class NegativeControlProbe:
+    name: str
+    prompt: str
+    expected_outcome: NegativeControlOutcome = "decline"
+    source: NegativeControlSource = "trace"
+
+    @classmethod
+    def from_raw(
+        cls,
+        raw: "NegativeControlProbe | dict[str, Any] | str",
+        *,
+        default_source: NegativeControlSource = "trace",
+        fallback_name: str = "negative_control",
+    ) -> "NegativeControlProbe":
+        if isinstance(raw, cls):
+            return raw
+        if isinstance(raw, dict):
+            prompt = str(raw.get("prompt") or raw.get("target") or raw.get("query") or raw.get("text") or "").strip()
+            name = str(raw.get("name") or raw.get("id") or fallback_name).strip() or fallback_name
+            expected = _normalize_negative_control_outcome(raw.get("expected_outcome") or raw.get("expected"))
+            source = _normalize_negative_control_source(raw.get("source"), default_source=default_source)
+            return cls(name=name, prompt=prompt, expected_outcome=expected, source=source)
+        prompt = str(raw).strip()
+        return cls(name=fallback_name, prompt=prompt, expected_outcome="decline", source=default_source)
+
+    def to_dict(self) -> dict[str, str]:
+        return asdict(self)
+
+
+def _normalize_negative_control_outcome(value: Any) -> NegativeControlOutcome:
+    text = str(value or "decline").strip().lower().replace("-", "_")
+    if text not in NEGATIVE_CONTROL_OUTCOMES:
+        text = "decline"
+    return text  # type: ignore[return-value]
+
+
+def _normalize_negative_control_source(
+    value: Any,
+    *,
+    default_source: NegativeControlSource = "trace",
+) -> NegativeControlSource:
+    text = str(value or default_source).strip().lower().replace("-", "_")
+    if text not in NEGATIVE_CONTROL_SOURCES:
+        text = default_source
+    return text  # type: ignore[return-value]
 
 
 @dataclass(slots=True)
@@ -82,6 +137,8 @@ class TaskTrace:
     token_cost: int = 0
     token_budget: int = 0
     validation_targets: list[str] = field(default_factory=list)
+    negative_control_targets: list[str] = field(default_factory=list)
+    negative_control_probes: list[NegativeControlProbe] = field(default_factory=list)
     artifacts: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
@@ -98,6 +155,11 @@ class TaskTrace:
             token_cost=int(data.get("token_cost", 0)),
             token_budget=int(data.get("token_budget", 0)),
             validation_targets=list(data.get("validation_targets", [])),
+            negative_control_targets=list(data.get("negative_control_targets", data.get("overclaim_targets", []))),
+            negative_control_probes=[
+                NegativeControlProbe.from_raw(item, default_source="trace", fallback_name=f"trace_negative_control_{index + 1}")
+                for index, item in enumerate(data.get("negative_control_probes", data.get("overclaim_probes", [])))
+            ],
             artifacts=dict(data.get("artifacts", {})),
         )
 
@@ -155,6 +217,7 @@ class EvolutionProposal:
     required_capabilities: list[str] = field(default_factory=list)
     change_targets: list[str] = field(default_factory=list)
     validator_steps: list[str] = field(default_factory=list)
+    negative_control_probes: list[NegativeControlProbe] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:

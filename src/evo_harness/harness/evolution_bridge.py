@@ -8,7 +8,14 @@ from typing import Any
 from evo_harness.engine import EvolutionEngine
 from evo_harness.harness.provider import detect_provider_profile
 from evo_harness.harness.session import get_session_dir, load_session_snapshot
-from evo_harness.models import AutonomousEvolutionAssessment, EvolutionPlan, HarnessCapabilities, Outcome, TaskTrace
+from evo_harness.models import (
+    AutonomousEvolutionAssessment,
+    EvolutionPlan,
+    HarnessCapabilities,
+    NegativeControlProbe,
+    Outcome,
+    TaskTrace,
+)
 
 
 def task_trace_from_session_snapshot(
@@ -87,6 +94,8 @@ def task_trace_from_session_snapshot(
         and not (assessment_payload and assessment_payload.needs_evolution and assessment_payload.operator != "distill_memory")
     )
     validation_targets = _infer_validation_targets(effective_snapshot)
+    negative_control_targets = _infer_negative_control_targets(effective_snapshot, assessment_payload)
+    negative_control_probes = _infer_negative_control_probes(effective_snapshot, assessment_payload)
     provider_config = _provider_config_from_snapshot(effective_snapshot, metadata)
     artifacts = {
         "active_command_name": active_command.get("name"),
@@ -141,6 +150,8 @@ def task_trace_from_session_snapshot(
         token_cost=0,
         token_budget=0,
         validation_targets=validation_targets,
+        negative_control_targets=negative_control_targets,
+        negative_control_probes=negative_control_probes,
         artifacts=artifacts,
     )
 
@@ -297,6 +308,64 @@ def _infer_validation_targets(snapshot: dict[str, Any]) -> list[str]:
             if normalized and normalized not in targets:
                 targets.append(normalized)
     return targets
+
+
+def _infer_negative_control_targets(
+    snapshot: dict[str, Any],
+    assessment: AutonomousEvolutionAssessment | None,
+) -> list[str]:
+    metadata = dict(snapshot.get("metadata", {}))
+    targets: list[str] = []
+    for source in (snapshot, metadata, dict((assessment.capability_gap or {}) if assessment else {})):
+        for key in ("negative_control_targets", "overclaim_targets"):
+            for item in _list_like(source.get(key)):
+                text = str(item).strip()
+                if text and text not in targets:
+                    targets.append(text)
+    return targets
+
+
+def _infer_negative_control_probes(
+    snapshot: dict[str, Any],
+    assessment: AutonomousEvolutionAssessment | None,
+) -> list[NegativeControlProbe]:
+    metadata = dict(snapshot.get("metadata", {}))
+    probes: list[NegativeControlProbe] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for source_name, source in (
+        ("manual", snapshot),
+        ("trace", metadata),
+        ("trace", dict((assessment.capability_gap or {}) if assessment else {})),
+    ):
+        for key in ("negative_control_probes", "overclaim_probes"):
+            for index, item in enumerate(_list_like(source.get(key))):
+                probe = NegativeControlProbe.from_raw(
+                    item,
+                    default_source=source_name if source_name in {"trace", "proposal", "policy", "manual"} else "trace",
+                    fallback_name=f"{key}_{index + 1}",
+                )
+                if not probe.prompt:
+                    continue
+                probe_key = (probe.name, probe.prompt, probe.expected_outcome, probe.source)
+                if probe_key in seen:
+                    continue
+                seen.add(probe_key)
+                probes.append(probe)
+    return probes
+
+
+def _list_like(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    if isinstance(value, dict):
+        if any(key in value for key in ("name", "prompt", "target", "expected", "expected_outcome")):
+            return [value]
+        return list(value.values())
+    return [value]
 
 
 def _looks_like_command_pressure(

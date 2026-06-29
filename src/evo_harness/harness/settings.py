@@ -65,6 +65,9 @@ class PromotionPolicySettings:
     min_executed_validations: int = 1
     max_recent_failed_promotions: int = 1
     require_executed_regression: bool = True
+    enable_negative_controls: bool = True
+    require_executed_negative_controls: bool = True
+    max_overclaim_hits: int = 0
     allow_auto_promote: bool = True
     min_promotion_score: float = 0.55
     require_candidate_before_promotion: bool = True
@@ -318,6 +321,9 @@ def load_settings(path: str | Path | None = None, *, workspace: str | Path | Non
         min_executed_validations=int(promotion_raw.get("min_executed_validations", 1)),
         max_recent_failed_promotions=int(promotion_raw.get("max_recent_failed_promotions", 1)),
         require_executed_regression=bool(promotion_raw.get("require_executed_regression", True)),
+        enable_negative_controls=bool(promotion_raw.get("enable_negative_controls", True)),
+        require_executed_negative_controls=bool(promotion_raw.get("require_executed_negative_controls", True)),
+        max_overclaim_hits=int(promotion_raw.get("max_overclaim_hits", 0)),
         allow_auto_promote=bool(promotion_raw.get("allow_auto_promote", True)),
         min_promotion_score=float(promotion_raw.get("min_promotion_score", 0.55)),
         require_candidate_before_promotion=bool(promotion_raw.get("require_candidate_before_promotion", True)),
@@ -493,11 +499,14 @@ def _env_overrides() -> dict[str, Any]:
         "EVO_HARNESS_QUERY_MAX_TOOL_CALLS": ("query", "max_total_tool_calls"),
         "EVO_HARNESS_QUERY_MAX_TOOL_FAILURES": ("query", "max_tool_failures"),
         "EVO_HARNESS_SUBAGENT_MAX_TURNS": ("subagents", "default_max_turns"),
+        "EVO_HARNESS_MAX_OVERCLAIM_HITS": ("promotion", "max_overclaim_hits"),
     }
     direct_bool_overrides = {
         "EVO_HARNESS_MEMORY_ENABLED": ("memory_enabled",),
         "EVO_HARNESS_WORKSPACE_INSTRUCTIONS": ("workspace_instructions",),
         "EVO_HARNESS_AUTO_PROMOTE": ("promotion", "allow_auto_promote"),
+        "EVO_HARNESS_ENABLE_NEGATIVE_CONTROLS": ("promotion", "enable_negative_controls"),
+        "EVO_HARNESS_REQUIRE_NEGATIVE_CONTROLS": ("promotion", "require_executed_negative_controls"),
         "EVO_HARNESS_UI_HINTS": ("ui", "show_hints"),
         "EVO_HARNESS_SANDBOX_ALLOW_NETWORK": ("sandbox", "allow_network"),
         "EVO_HARNESS_SEARCH_FALLBACK_TO_EXA": ("search", "fallback_to_exa"),

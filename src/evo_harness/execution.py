@@ -12,6 +12,11 @@ from pathlib import Path
 from typing import Any
 
 from evo_harness.autonomous_evolution import assess_saved_session
+from evo_harness.core.validator import (
+    NEGATIVE_CONTROL_STEP_PREFIX,
+    looks_like_executable_validation,
+    parse_negative_control_step,
+)
 from evo_harness.core.workspace import discover_workspace
 from evo_harness.harness import ConversationEngine
 from evo_harness.harness.memory import add_memory_entry
@@ -39,6 +44,7 @@ class PromotionAssessment:
     score: float
     decision: str
     reasons: list[str] = field(default_factory=list)
+    overclaim_hits: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -275,7 +281,13 @@ class ControlledEvolutionExecutor:
             result.notes.append(f"Unknown execution mode: {mode}")
             return _finalize_execution_result(workspace, plan=plan, result=result)
 
-        result.validation = _run_validation_steps(plan, workspace, run_validation=run_validation, mode=mode)
+        result.validation = _run_validation_steps(
+            plan,
+            workspace,
+            run_validation=run_validation,
+            mode=mode,
+            negative_controls_enabled=policy.enable_negative_controls,
+        )
         if mode == "apply" and any(not item.success for item in result.validation):
             if safety.rollback_on_apply_validation_failure:
                 _restore_backups(result.backup_paths, result.applied_paths)
@@ -384,7 +396,13 @@ class ControlledEvolutionExecutor:
             result.notes.append(f"Unknown execution mode: {mode}")
             return _finalize_execution_result(workspace, plan=plan, result=result)
 
-        result.validation = _run_validation_steps(plan, workspace, run_validation=run_validation, mode=mode)
+        result.validation = _run_validation_steps(
+            plan,
+            workspace,
+            run_validation=run_validation,
+            mode=mode,
+            negative_controls_enabled=policy.enable_negative_controls,
+        )
         if mode == "apply" and any(not item.success for item in result.validation):
             if safety.rollback_on_apply_validation_failure:
                 _restore_backups(result.backup_paths, result.applied_paths)
@@ -474,7 +492,13 @@ class ControlledEvolutionExecutor:
             result.notes.append(f"Unknown execution mode: {mode}")
             return _finalize_execution_result(workspace, plan=plan, result=result)
 
-        result.validation = _run_validation_steps(plan, workspace, run_validation=run_validation, mode=mode)
+        result.validation = _run_validation_steps(
+            plan,
+            workspace,
+            run_validation=run_validation,
+            mode=mode,
+            negative_controls_enabled=policy.enable_negative_controls,
+        )
         if mode == "promote":
             validation_decision, assessment = _promotion_decision(
                 result.validation,
@@ -602,6 +626,7 @@ def promotion_report(workspace_root: str | Path, *, limit: int = 50) -> dict[str
                 "promotion_state": state,
                 "score": assessment.get("score"),
                 "decision": assessment.get("decision"),
+                "overclaim_hits": assessment.get("overclaim_hits", 0),
                 "target": target,
                 "bundle": bundle_name,
             }
@@ -615,6 +640,7 @@ def promotion_analytics_report(workspace_root: str | Path, *, limit: int = 100) 
     by_operator: dict[str, int] = {}
     by_decision: dict[str, int] = {}
     by_reason: dict[str, int] = {}
+    total_overclaim_hits = 0
     scores: list[float] = []
     target_health: dict[str, dict[str, int]] = {}
     bundle_health: dict[str, dict[str, int]] = {}
@@ -630,6 +656,10 @@ def promotion_analytics_report(workspace_root: str | Path, *, limit: int = 100) 
         operator = str(execution.get("operator", "unknown"))
         assessment = dict(execution.get("assessment") or {})
         decision = str(assessment.get("decision", execution.get("promotion_state", "unknown")))
+        try:
+            total_overclaim_hits += int(assessment.get("overclaim_hits", 0) or 0)
+        except (TypeError, ValueError):
+            pass
         target = _plan_target_label(plan)
         bundle_name = _plan_bundle_name(plan)
         by_operator[operator] = by_operator.get(operator, 0) + 1
@@ -655,6 +685,7 @@ def promotion_analytics_report(workspace_root: str | Path, *, limit: int = 100) 
                 "operator": operator,
                 "decision": decision,
                 "score": assessment.get("score"),
+                "overclaim_hits": assessment.get("overclaim_hits", 0),
                 "target": target,
                 "bundle": bundle_name,
             }
@@ -666,6 +697,7 @@ def promotion_analytics_report(workspace_root: str | Path, *, limit: int = 100) 
             "avg_score": round(sum(scores) / len(scores), 3) if scores else None,
             "max_score": max(scores) if scores else None,
             "min_score": min(scores) if scores else None,
+            "overclaim_hits": total_overclaim_hits,
         },
         "by_operator": dict(sorted(by_operator.items(), key=lambda item: item[0])),
         "by_decision": dict(sorted(by_decision.items(), key=lambda item: item[0])),
@@ -1022,9 +1054,45 @@ def _run_validation_steps(
     *,
     run_validation: bool,
     mode: str,
+    negative_controls_enabled: bool = True,
 ) -> list[ValidationResult]:
     results: list[ValidationResult] = []
     for step in plan.proposal.validator_steps:
+        if step.startswith(NEGATIVE_CONTROL_STEP_PREFIX):
+            if not negative_controls_enabled:
+                results.append(
+                    ValidationResult(
+                        step=step,
+                        success=True,
+                        output="Negative-control validation is disabled by promotion policy.",
+                        executed=False,
+                    )
+                )
+                continue
+            probe = parse_negative_control_step(step)
+            if probe is None:
+                results.append(
+                    ValidationResult(
+                        step=step,
+                        success=False,
+                        output="Negative-control validation step could not be parsed.",
+                        executed=True,
+                    )
+                )
+                continue
+            if not run_validation:
+                results.append(
+                    ValidationResult(
+                        step=step,
+                        success=True,
+                        output="Skipped negative-control execution.",
+                        executed=False,
+                    )
+                )
+                continue
+            success, output, executed = _run_negative_control_validation(probe, workspace)
+            results.append(ValidationResult(step=step, success=success, output=output, executed=executed))
+            continue
         if step == "Validate replay readiness and surface completeness.":
             success, output = _validate_replay_readiness(plan, workspace)
             results.append(ValidationResult(step=step, success=success, output=output, executed=True))
@@ -1104,6 +1172,56 @@ def _run_validation_steps(
     return results
 
 
+def _run_negative_control_validation(probe, workspace: Path) -> tuple[bool, str, bool]:
+    command = str(probe.prompt or "").strip()
+    if not command:
+        return False, "Negative-control probe has no prompt to execute.", True
+    if not looks_like_executable_validation(command):
+        return (
+            True,
+            (
+                "Negative-control probe requires semantic evaluation and was not executed by the local command runner. "
+                f"Expected outcome: {probe.expected_outcome}."
+            ),
+            False,
+        )
+    completed = subprocess.run(
+        command,
+        cwd=str(workspace),
+        shell=True,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    output = "\n".join(part for part in [completed.stdout.strip(), completed.stderr.strip()] if part)
+    output = output or "(no output)"
+    if completed.returncode == 0:
+        return (
+            False,
+            (
+                f"Overclaim hit: negative-control detector returned 0 for expected outcome "
+                f"{probe.expected_outcome}. Output:\n{output}"
+            ),
+            True,
+        )
+    if _looks_like_command_execution_error(output):
+        return (
+            False,
+            f"Negative-control detector failed to execute cleanly; returncode={completed.returncode}. Output:\n{output}",
+            True,
+        )
+    return (
+        True,
+        (
+            f"Negative control passed: detector returned {completed.returncode}, so the candidate did not satisfy "
+            f"the unsupported probe. Expected outcome: {probe.expected_outcome}. Output:\n{output}"
+        ),
+        True,
+    )
+
+
 def _promotion_decision(
     validation: list[ValidationResult],
     *,
@@ -1118,12 +1236,40 @@ def _promotion_decision(
         workspace=workspace,
         policy=policy,
     )
+    negative_controls = _negative_control_results(validation) if getattr(policy, "enable_negative_controls", True) else []
+    overclaim_hits = _overclaim_hits(negative_controls)
+    if overclaim_hits > int(getattr(policy, "max_overclaim_hits", 0)):
+        return (
+            "reject",
+            PromotionAssessment(
+                score=score,
+                decision="reject",
+                reasons=_dedupe_reasons(reasons + [f"overclaim_hits:{overclaim_hits}", "negative_control_failed"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
     if any(not item.success for item in validation):
-        return "reject", PromotionAssessment(score=score, decision="reject", reasons=reasons + ["validation_failed"])
+        return (
+            "reject",
+            PromotionAssessment(
+                score=score,
+                decision="reject",
+                reasons=_dedupe_reasons(reasons + ["validation_failed"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
     requires_replay = any(step.step.startswith("Replay the original task: ") for step in validation)
     executed_replay = any(step.step.startswith("Replay the original task: ") and step.executed for step in validation)
     if requires_replay and not executed_replay and not allow_unvalidated_promotion:
-        return "blocked", PromotionAssessment(score=score, decision="blocked", reasons=reasons + ["replay_not_executed"])
+        return (
+            "blocked",
+            PromotionAssessment(
+                score=score,
+                decision="blocked",
+                reasons=_dedupe_reasons(reasons + ["replay_not_executed"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
     requires_command = any(
         step.step.startswith("Run regression validation: ")
         and not step.step.endswith("default regression checks")
@@ -1136,19 +1282,105 @@ def _promotion_decision(
         for step in validation
     )
     if requires_command and not executed_command and policy.require_executed_regression and not allow_unvalidated_promotion:
-        return "blocked", PromotionAssessment(score=score, decision="blocked", reasons=reasons + ["regression_not_executed"])
+        return (
+            "blocked",
+            PromotionAssessment(
+                score=score,
+                decision="blocked",
+                reasons=_dedupe_reasons(reasons + ["regression_not_executed"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
+    if (
+        negative_controls
+        and any(not item.executed for item in negative_controls)
+        and getattr(policy, "require_executed_negative_controls", True)
+        and not allow_unvalidated_promotion
+    ):
+        return (
+            "blocked",
+            PromotionAssessment(
+                score=score,
+                decision="blocked",
+                reasons=_dedupe_reasons(reasons + ["negative_control_not_executed"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
     executed_validation_count = sum(1 for step in validation if step.executed)
     if executed_validation_count < policy.min_executed_validations and not allow_unvalidated_promotion:
-        return "blocked", PromotionAssessment(score=score, decision="blocked", reasons=reasons + ["not_enough_executed_validations"])
+        return (
+            "blocked",
+            PromotionAssessment(
+                score=score,
+                decision="blocked",
+                reasons=_dedupe_reasons(reasons + ["not_enough_executed_validations"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
     target = _plan_target_label(plan)
     recent_failures = _recent_failed_promotions(workspace, target=target)
     if recent_failures > policy.max_recent_failed_promotions:
-        return "blocked", PromotionAssessment(score=score, decision="blocked", reasons=reasons + ["too_many_recent_failures"])
+        return (
+            "blocked",
+            PromotionAssessment(
+                score=score,
+                decision="blocked",
+                reasons=_dedupe_reasons(reasons + ["too_many_recent_failures"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
     if score < policy.min_promotion_score and not allow_unvalidated_promotion:
-        return "blocked", PromotionAssessment(score=score, decision="blocked", reasons=reasons + ["score_below_threshold"])
+        return (
+            "blocked",
+            PromotionAssessment(
+                score=score,
+                decision="blocked",
+                reasons=_dedupe_reasons(reasons + ["score_below_threshold"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
     if policy.cooldown_seconds and _within_cooldown(workspace, target=target, cooldown_seconds=policy.cooldown_seconds):
-        return "blocked", PromotionAssessment(score=score, decision="blocked", reasons=reasons + ["cooldown_active"])
-    return "promote", PromotionAssessment(score=score, decision="promote", reasons=reasons)
+        return (
+            "blocked",
+            PromotionAssessment(
+                score=score,
+                decision="blocked",
+                reasons=_dedupe_reasons(reasons + ["cooldown_active"]),
+                overclaim_hits=overclaim_hits,
+            ),
+        )
+    return (
+        "promote",
+        PromotionAssessment(
+            score=score,
+            decision="promote",
+            reasons=_dedupe_reasons(reasons),
+            overclaim_hits=overclaim_hits,
+        ),
+    )
+
+
+def _negative_control_results(validation: list[ValidationResult]) -> list[ValidationResult]:
+    return [item for item in validation if item.step.startswith(NEGATIVE_CONTROL_STEP_PREFIX)]
+
+
+def _overclaim_hits(validation: list[ValidationResult]) -> int:
+    return sum(
+        1
+        for item in validation
+        if item.step.startswith(NEGATIVE_CONTROL_STEP_PREFIX)
+        and item.executed
+        and not item.success
+        and "overclaim hit" in item.output.lower()
+    )
+
+
+def _dedupe_reasons(reasons: list[str]) -> list[str]:
+    deduped: list[str] = []
+    for reason in reasons:
+        if reason not in deduped:
+            deduped.append(reason)
+    return deduped
 
 
 def _validate_ecosystem_discoverability(plan: EvolutionPlan, workspace: Path, *, mode: str) -> tuple[bool, str]:
@@ -1250,6 +1482,22 @@ def _looks_like_replay_environment_issue(error: Exception | str) -> bool:
             "503",
             "502",
             "network",
+        )
+    )
+
+
+def _looks_like_command_execution_error(output: str) -> bool:
+    text = str(output).lower()
+    return any(
+        marker in text
+        for marker in (
+            "command not found",
+            "no such file or directory",
+            "is not recognized as",
+            "not recognized as an internal or external command",
+            "cannot find the path",
+            "was not found",
+            "the system cannot find",
         )
     )
 
@@ -1632,6 +1880,8 @@ def _refine_generic_growth_change_request(
         token_cost=plan.trace.token_cost,
         token_budget=plan.trace.token_budget,
         validation_targets=list(plan.trace.validation_targets),
+        negative_control_targets=list(plan.trace.negative_control_targets),
+        negative_control_probes=list(plan.trace.negative_control_probes),
         artifacts=artifacts,
     )
     refined_request = build_generic_capability_growth_change_request(
@@ -1839,6 +2089,10 @@ def _promotion_score(
     if executed_validation_count >= policy.min_executed_validations:
         score += 0.10
         reasons.append("executed_validations")
+    overclaim_hits = _overclaim_hits(_negative_control_results(validation))
+    if overclaim_hits:
+        score -= min(0.20 * overclaim_hits, 0.40)
+        reasons.append(f"overclaim_hits:{overclaim_hits}")
     if any(not item.success for item in validation):
         score -= 0.25
         reasons.append("validation_failed")
